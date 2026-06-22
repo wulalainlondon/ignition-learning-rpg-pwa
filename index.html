@@ -1,0 +1,2131 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#06C755">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="聖火騎士">
+  <meta name="application-name" content="聖火騎士">
+  <meta name="description" content="每日 15 題的遊戲化學習地圖。">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="./icons/icon.svg">
+  <title>聖火騎士</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html {
+      width: 100%;
+      height: 100%;
+    }
+    body {
+      font-family: -apple-system, 'Helvetica Neue', 'PingFang TC', sans-serif;
+      background: #c1dac8;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      min-height: 100dvh;
+      overflow: hidden;
+    }
+
+    /* App frame */
+    .phone {
+      width: 100vw;
+      height: 100dvh;
+      background: #fff;
+      border-radius: 0;
+      overflow: hidden;
+      box-shadow: none;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    /* Status bar */
+    .status-bar {
+      background: #fff;
+      padding: 14px 20px 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    /* Header */
+    .header {
+      background: #fff;
+      border-bottom: 1px solid #ebebeb;
+      padding: 8px 16px 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    .back-btn { font-size: 22px; color: #06C755; cursor: pointer; font-weight: 300; }
+    .avatar {
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #FF6B35, #FFB347);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+    }
+    .header-info { flex: 1; }
+    .header-name { font-weight: 700; font-size: 15px; color: #111; }
+    .header-sub { font-size: 11px; color: #999; margin-top: 1px; }
+    .header-icons { display: flex; gap: 18px; color: #aaa; font-size: 18px; cursor: pointer; }
+
+    /* Chat area */
+    .chat-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 18px clamp(10px, 3vw, 34px);
+      background: #c1dac8;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .chat-area::-webkit-scrollbar { width: 0; }
+
+    /* Date chip */
+    .date-chip {
+      align-self: center;
+      background: rgba(0,0,0,0.18);
+      color: #fff;
+      font-size: 11px;
+      padding: 3px 12px;
+      border-radius: 10px;
+    }
+
+    /* Message rows */
+    .msg-row { display: flex; align-items: flex-end; gap: 6px; }
+    .msg-row.bot { flex-direction: row; }
+    .msg-row.user { flex-direction: row-reverse; }
+
+    .bot-avatar {
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #FF6B35, #FFB347);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; flex-shrink: 0; align-self: flex-end;
+    }
+
+    .bubble {
+      max-width: min(72vw, 560px);
+      padding: 9px 13px;
+      font-size: 14px;
+      line-height: 1.55;
+      word-break: break-word;
+    }
+    .bot .bubble {
+      background: #fff;
+      border-radius: 16px 16px 16px 4px;
+      color: #111;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .user .bubble {
+      background: #06C755;
+      border-radius: 16px 16px 4px 16px;
+      color: #fff;
+    }
+    .msg-time {
+      font-size: 10px;
+      color: rgba(0,0,0,0.3);
+      flex-shrink: 0;
+      margin-bottom: 2px;
+    }
+
+    /* Card bubble */
+    .card-bubble {
+      max-width: min(78vw, 600px);
+      background: #fff;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .card-header {
+      padding: 10px 14px;
+      font-weight: 700;
+      font-size: 13px;
+      color: #fff;
+      background: linear-gradient(135deg, #FF6B35, #FF9800);
+    }
+    .card-body {
+      padding: 12px 14px;
+      font-size: 13px;
+      line-height: 1.6;
+      color: #333;
+    }
+    .card-divider { height: 1px; background: #f0f0f0; margin: 8px 0; }
+
+    /* Cooldown and reward sequence */
+    .cooldown-card {
+      max-width: min(78vw, 600px);
+      background: linear-gradient(180deg, #f8fbf7, #fffaf1);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(44,68,52,0.14);
+      border: 1px solid rgba(117,142,117,0.22);
+    }
+    .cooldown-scene {
+      height: 132px;
+      position: relative;
+      background:
+        linear-gradient(180deg, rgba(169,198,185,0.42), rgba(255,245,225,0.8)),
+        linear-gradient(90deg, #d7eadc, #f7dfbd);
+      overflow: hidden;
+    }
+    .cooldown-sun {
+      position: absolute; right: 22px; top: 18px;
+      width: 28px; height: 28px; border-radius: 50%;
+      background: #ffe08a;
+      box-shadow: 0 0 24px rgba(255,199,83,0.35);
+    }
+    .cooldown-hill {
+      position: absolute; left: -20px; right: -20px; bottom: 0;
+      height: 50px; border-radius: 50% 50% 0 0;
+      background: #b9d4b9;
+    }
+    .cooldown-path {
+      position: absolute; left: 95px; bottom: -20px;
+      width: 70px; height: 92px;
+      background: rgba(238,216,179,0.72);
+      transform: perspective(90px) rotateX(34deg);
+      border-radius: 36px 36px 0 0;
+    }
+    .cooldown-hero {
+      position: absolute; left: 24px; bottom: 32px;
+      display: flex; align-items: flex-end; gap: 6px;
+      animation: walkHome 4.8s ease-in-out infinite;
+    }
+    .hero-body {
+      width: 24px; height: 32px; border-radius: 11px 11px 8px 8px;
+      background: linear-gradient(180deg, #7a9b88, #4d6f5d);
+      position: relative;
+    }
+    .hero-body:before {
+      content: "";
+      position: absolute; left: 6px; top: -10px;
+      width: 12px; height: 12px; border-radius: 50%;
+      background: #f0c69c;
+    }
+    .hero-pack {
+      width: 19px; height: 23px; border-radius: 7px;
+      background: #8a6a48;
+      box-shadow: inset 0 -5px rgba(0,0,0,0.12);
+      animation: packBreath 2.4s ease-in-out infinite;
+    }
+    .cooldown-caption {
+      padding: 12px 14px 14px;
+      color: #3f5146;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+    .cooldown-caption strong { color: #24372c; }
+    .breath-meter {
+      height: 5px;
+      background: rgba(122,155,136,0.18);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 9px;
+    }
+    .breath-fill {
+      height: 100%;
+      width: 38%;
+      border-radius: 4px;
+      background: linear-gradient(90deg, #7a9b88, #f0c36a);
+      animation: breathe 4.8s ease-in-out infinite;
+    }
+    .cooldown-tips {
+      margin-top: 10px;
+      padding-top: 9px;
+      border-top: 1px solid rgba(122,155,136,0.18);
+      color: #647368;
+      font-size: 12px;
+    }
+    .cooldown-next {
+      margin-top: 10px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.58);
+      color: #526153;
+      font-size: 12px;
+    }
+    .reward-card {
+      max-width: min(78vw, 600px);
+      background: linear-gradient(180deg, #fff8ec, #fff);
+      border: 1.5px solid #ffd68d;
+      border-radius: 16px;
+      padding: 14px;
+      text-align: center;
+      box-shadow: 0 2px 12px rgba(163,100,28,0.12);
+    }
+    .reward-chest {
+      font-size: 44px;
+      line-height: 1;
+      margin-bottom: 8px;
+      animation: chestPulse 1.8s ease-in-out infinite;
+    }
+    .reward-title { font-size: 15px; font-weight: 800; color: #2f2416; }
+    .reward-desc { font-size: 12px; line-height: 1.6; color: #6b5a43; margin-top: 7px; }
+    .sandbox-card {
+      max-width: min(78vw, 600px);
+      background: #f9fbff;
+      border: 1.5px solid #d8e6ff;
+      border-radius: 16px;
+      padding: 13px 14px;
+      color: #27364a;
+    }
+    .sandbox-title { font-size: 14px; font-weight: 800; margin-bottom: 7px; }
+    .sandbox-prompt {
+      background: #fff;
+      border-radius: 12px;
+      padding: 10px 11px;
+      font-size: 12px;
+      line-height: 1.55;
+      margin-top: 7px;
+      border: 1px solid #edf2ff;
+    }
+    @keyframes walkHome {
+      0%, 100% { transform: translateX(0); }
+      50% { transform: translateX(126px); }
+    }
+    @keyframes packBreath {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-3px); }
+    }
+    @keyframes breathe {
+      0%, 100% { width: 26%; opacity: 0.65; }
+      50% { width: 100%; opacity: 1; }
+    }
+    @keyframes chestPulse {
+      0%, 100% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(255,179,71,0)); }
+      50% { transform: scale(1.06); filter: drop-shadow(0 6px 12px rgba(255,179,71,0.28)); }
+    }
+
+    /* Choice buttons */
+    .choices-wrap { margin-left: 36px; display: flex; flex-direction: column; gap: 6px; max-width: min(78vw, 600px); }
+    .choice-btn {
+      background: #fff;
+      border: 1.5px solid #ddd;
+      border-radius: 10px;
+      padding: 9px 13px;
+      font-size: 13px;
+      color: #333;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.18s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .choice-btn:focus { outline: none; }
+    @media (hover: hover) and (pointer: fine) {
+      .choice-btn:hover:not(:disabled) { border-color: #06C755; color: #06C755; }
+    }
+    .choice-btn.correct { background: #e8f5e9; border-color: #06C755; color: #1b5e20; font-weight: 600; }
+    .choice-btn.wrong { background: #ffebee; border-color: #ef5350; color: #b71c1c; }
+    .choice-btn:disabled { cursor: default; opacity: 0.7; }
+
+    /* Quick replies */
+    .qr-wrap { margin-left: 36px; display: flex; flex-wrap: wrap; gap: 7px; max-width: min(80vw, 640px); }
+    .qr-btn {
+      background: #fff;
+      border: 1.5px solid #06C755;
+      border-radius: 18px;
+      padding: 7px 15px;
+      font-size: 13px;
+      color: #06C755;
+      cursor: pointer;
+      transition: all 0.18s;
+      white-space: nowrap;
+    }
+    .qr-btn:hover { background: #06C755; color: #fff; }
+    .qr-btn:active { transform: scale(0.95); }
+
+    /* Input area */
+    .input-area {
+      background: #fff;
+      border-top: 1px solid #ebebeb;
+      padding: 8px 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .icon-btn {
+      width: 34px; height: 34px;
+      border: none; background: none;
+      font-size: 22px; color: #aaa;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .input-box {
+      flex: 1;
+      background: #f4f4f4;
+      border: none; border-radius: 18px;
+      padding: 8px 14px;
+      font-size: 14px;
+      outline: none;
+      font-family: inherit;
+    }
+    .send-btn {
+      width: 34px; height: 34px;
+      background: #06C755; border: none; border-radius: 50%;
+      color: #fff; font-size: 14px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    /* Rich Menu toggle */
+    .rm-toggle {
+      background: #f9f9f9;
+      border-top: 1px solid #ebebeb;
+      height: 26px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; flex-shrink: 0;
+      gap: 4px; color: #999; font-size: 11px;
+    }
+    .rm-toggle-arrow { transition: transform 0.3s; font-size: 10px; }
+    .rm-toggle-arrow.open { transform: rotate(180deg); }
+
+    /* Rich Menu */
+    .rich-menu {
+      background: #fff;
+      flex-shrink: 0;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+    .rich-menu.open { max-height: 190px; }
+    .rm-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: #e8e8e8;
+      border-top: 1px solid #e8e8e8;
+    }
+    .rm-btn {
+      background: #fff;
+      border: none;
+      padding: 14px 6px;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 5px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .rm-btn:hover { background: #f0faf2; }
+    .rm-btn:active { background: #e0f5e4; }
+    .rm-icon { font-size: 22px; }
+    .rm-label { font-size: 11px; color: #444; font-weight: 500; }
+
+    /* Bottom sheet overlay */
+    .overlay {
+      position: absolute; inset: 0;
+      background: rgba(0,0,0,0.48);
+      z-index: 100;
+      display: none; flex-direction: column;
+      justify-content: flex-end;
+      border-radius: 0;
+      overflow: hidden;
+    }
+    .overlay.show { display: flex; }
+
+    .sheet {
+      background: #fff;
+      border-radius: 20px 20px 0 0;
+      max-height: 70%;
+      overflow-y: auto;
+      animation: slideUp 0.28s ease;
+      width: min(100%, 760px);
+      align-self: center;
+    }
+    .sheet::-webkit-scrollbar { width: 3px; }
+    .sheet::-webkit-scrollbar-thumb { background: #ddd; border-radius: 2px; }
+
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+
+    .sheet-handle { width: 36px; height: 4px; background: #ddd; border-radius: 2px; margin: 10px auto 6px; }
+    .sheet-title {
+      font-size: 16px; font-weight: 700;
+      padding: 4px 18px 12px;
+      color: #111;
+      border-bottom: 1px solid #f0f0f0;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .close-btn { background: none; border: none; font-size: 18px; color: #bbb; cursor: pointer; }
+    .sheet-body { padding: 14px 18px 20px; }
+
+    /* Game inventory modal */
+    .inventory-overlay {
+      justify-content: center;
+      align-items: center;
+      padding: 24px;
+    }
+    .inventory-window {
+      width: 330px;
+      max-height: 660px;
+      background: #241f1a;
+      border: 2px solid #b08a4b;
+      border-radius: 12px;
+      box-shadow: 0 18px 48px rgba(0,0,0,0.42), inset 0 0 0 1px rgba(255,240,196,0.2);
+      overflow: hidden;
+      animation: inventoryPop 0.18s ease;
+      color: #f8ecd0;
+      opacity: 1;
+    }
+    @keyframes inventoryPop {
+      from { transform: scale(0.94); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .inventory-titlebar {
+      height: 42px;
+      padding: 0 10px 0 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(180deg, #57412a, #34291f);
+      border-bottom: 1px solid rgba(255,220,142,0.35);
+      font-size: 15px;
+      font-weight: 800;
+    }
+    .inventory-close {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      border: 1px solid rgba(255,230,176,0.35);
+      background: #2a211a;
+      color: #f8ecd0;
+      font-size: 16px;
+      cursor: pointer;
+      line-height: 1;
+    }
+    .inventory-close:hover { background: #4c2f25; color: #fff; }
+    .inventory-body {
+      padding: 13px;
+      background:
+        linear-gradient(rgba(255,255,255,0.04), rgba(0,0,0,0.14)),
+        #2f2820;
+    }
+    .inventory-hp {
+      background: #1d1814;
+      border: 1px solid rgba(255,220,142,0.18);
+      border-radius: 8px;
+      padding: 9px 10px;
+      margin-bottom: 12px;
+    }
+    .inventory-main {
+      display: grid;
+      grid-template-columns: 128px 1fr;
+      gap: 10px;
+    }
+    .inventory-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 38px);
+      grid-auto-rows: 38px;
+      gap: 7px;
+      padding: 9px;
+      background: #1d1814;
+      border: 1px solid rgba(255,220,142,0.18);
+      border-radius: 9px;
+    }
+    .item-slot {
+      appearance: none;
+      -webkit-appearance: none;
+      cursor: pointer;
+      border-radius: 7px;
+      border: 1px solid #4c3d2a;
+      background: radial-gradient(circle at 35% 28%, #3e352b, #241e18);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      font-size: 20px;
+      box-shadow: inset 0 1px rgba(255,255,255,0.08);
+    }
+    .item-slot.empty { cursor: default; }
+    .item-slot.active {
+      border-color: #f3bf5b;
+      box-shadow: 0 0 0 1px rgba(243,191,91,0.25), inset 0 1px rgba(255,255,255,0.12);
+      background: radial-gradient(circle at 35% 28%, #594128, #2b2118);
+    }
+    .item-slot:focus-visible {
+      outline: 2px solid #f3bf5b;
+      outline-offset: 2px;
+    }
+    .item-count {
+      position: absolute;
+      right: 3px;
+      bottom: 2px;
+      min-width: 14px;
+      height: 14px;
+      border-radius: 7px;
+      background: #0f0d0b;
+      border: 1px solid rgba(255,220,142,0.35);
+      color: #f8ecd0;
+      font-size: 9px;
+      line-height: 12px;
+      text-align: center;
+      font-weight: 800;
+    }
+    .item-detail {
+      min-height: 140px;
+      background: #1d1814;
+      border: 1px solid rgba(255,220,142,0.18);
+      border-radius: 9px;
+      padding: 10px;
+    }
+    .item-name {
+      font-size: 13px;
+      font-weight: 800;
+      color: #fff2c8;
+      margin-bottom: 6px;
+    }
+    .item-type {
+      display: inline-block;
+      color: #f4bd60;
+      background: rgba(244,189,96,0.1);
+      border: 1px solid rgba(244,189,96,0.25);
+      border-radius: 8px;
+      padding: 2px 7px;
+      font-size: 10px;
+      margin-bottom: 8px;
+    }
+    .item-desc {
+      color: #d5c3a4;
+      font-size: 11px;
+      line-height: 1.55;
+      margin-bottom: 10px;
+    }
+    .item-note {
+      color: #9f8f75;
+      font-size: 10px;
+      line-height: 1.45;
+      margin-bottom: 10px;
+    }
+    .inventory-use {
+      width: 100%;
+      border: 1px solid #d39a45;
+      border-radius: 8px;
+      background: linear-gradient(180deg, #a96728, #74431e);
+      color: #fff7df;
+      padding: 8px 10px;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .inventory-use:active { transform: translateY(1px); }
+    .inventory-passive {
+      margin-top: 10px;
+      background: #1d1814;
+      border: 1px solid rgba(255,220,142,0.18);
+      border-radius: 9px;
+      padding: 10px;
+      color: #d5c3a4;
+      font-size: 11px;
+      line-height: 1.55;
+    }
+    .inventory-passive strong {
+      display: block;
+      color: #fff2c8;
+      font-size: 12px;
+      margin-bottom: 3px;
+    }
+
+    /* Onboarding cards */
+    .guide-card {
+      max-width: min(78vw, 600px);
+      background: #fff;
+      border: 1.5px solid #d7eadc;
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+    .guide-head {
+      padding: 10px 13px;
+      color: #173522;
+      font-size: 13px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #dff4e4, #fff7dc);
+      border-bottom: 1px solid #ecf3e6;
+    }
+    .guide-body {
+      padding: 12px 13px;
+      color: #38483d;
+      font-size: 12px;
+      line-height: 1.65;
+    }
+    .guide-safe {
+      margin-top: 9px;
+      padding: 9px 10px;
+      border-radius: 11px;
+      background: #f5fbf6;
+      color: #3f6a4e;
+      border: 1px solid #dff0e3;
+      font-size: 12px;
+    }
+
+    /* HP bar */
+    .hp-bar-wrap {
+      background: #fff8f0;
+      border-radius: 12px;
+      padding: 11px 14px;
+      margin-bottom: 14px;
+    }
+    .hp-label-row { display: flex; justify-content: space-between; font-size: 12px; color: #888; margin-bottom: 6px; }
+    .hp-track { height: 7px; background: #ffe0b2; border-radius: 4px; overflow: hidden; }
+    .hp-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, #FF6B35, #FFB347); transition: width 0.5s; }
+
+    /* Material bag */
+    .section-label { font-size: 11px; font-weight: 700; color: #aaa; letter-spacing: 0.8px; margin-bottom: 8px; text-transform: uppercase; }
+    .material-bag-window {
+      background: #2f2820;
+      border: 2px solid #b08a4b;
+      border-radius: 12px;
+      overflow: hidden;
+      color: #f8ecd0;
+      box-shadow: inset 0 0 0 1px rgba(255,240,196,0.18);
+    }
+    .material-bag-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 9px 11px;
+      background: linear-gradient(180deg, #57412a, #34291f);
+      border-bottom: 1px solid rgba(255,220,142,0.32);
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .material-bag-count { color: #d8c39a; font-size: 11px; font-weight: 700; }
+    .material-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(42px, 1fr));
+      gap: 7px;
+      padding: 10px;
+      background: #1d1814;
+    }
+    .material-slot {
+      appearance: none;
+      -webkit-appearance: none;
+      position: relative;
+      min-height: 52px;
+      border: 1px solid rgba(255,220,142,0.22);
+      border-radius: 7px;
+      background: linear-gradient(180deg, #3f352a, #2a231c);
+      color: #f8ecd0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 23px;
+      box-shadow: inset 0 1px rgba(255,255,255,0.07), 0 1px 2px rgba(0,0,0,0.25);
+    }
+    .material-slot.active {
+      outline: 2px solid #f3bf5b;
+      outline-offset: 2px;
+      border-color: #f3bf5b;
+      background: linear-gradient(180deg, #5a4429, #342719);
+    }
+    .material-slot.empty {
+      cursor: default;
+      opacity: 0.42;
+      background: #211b16;
+      box-shadow: inset 0 2px 8px rgba(0,0,0,0.32);
+    }
+    .material-rarity {
+      position: absolute;
+      left: 4px;
+      top: 4px;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #ffb84d;
+      box-shadow: 0 0 8px rgba(255,184,77,0.45);
+    }
+    .material-rarity.done { background: #53d17b; box-shadow: 0 0 8px rgba(83,209,123,0.45); }
+    .material-rarity.extend { background: #7cc7ff; box-shadow: 0 0 8px rgba(124,199,255,0.45); }
+    .material-count {
+      position: absolute;
+      right: 4px;
+      bottom: 3px;
+      min-width: 14px;
+      height: 14px;
+      padding: 0 4px;
+      border-radius: 7px;
+      background: rgba(0,0,0,0.56);
+      color: #fff3cf;
+      font-size: 10px;
+      line-height: 14px;
+      font-weight: 800;
+    }
+    .material-detail {
+      min-height: 128px;
+      padding: 12px 13px;
+      background: #2b241d;
+      border-top: 1px solid rgba(255,220,142,0.2);
+    }
+    .material-detail-name { font-size: 14px; font-weight: 900; color: #fff3cf; }
+    .material-detail-type { font-size: 11px; color: #c9b083; margin-top: 3px; }
+    .material-detail-desc { font-size: 12px; line-height: 1.6; color: #eadbbd; margin-top: 9px; }
+    .material-detail-use {
+      margin-top: 9px;
+      padding: 8px 9px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.06);
+      color: #d8c39a;
+      font-size: 11px;
+      line-height: 1.45;
+    }
+    .tag-g { background: #e8f5e9; color: #2e7d32; }
+    .tag-o { background: #fff3e0; color: #e65100; }
+    .tag-b { background: #e3f2fd; color: #1565c0; }
+
+    /* Map nodes */
+    .map-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .m-node {
+      background: #f8f8f8; border-radius: 12px;
+      padding: 14px 10px; text-align: center;
+    }
+    .m-node-icon { font-size: 26px; margin-bottom: 4px; }
+    .m-node-name { font-size: 12px; font-weight: 700; color: #111; }
+    .m-node-status { font-size: 11px; color: #888; margin-top: 2px; }
+    .m-bar { height: 4px; background: #e8e8e8; border-radius: 2px; margin-top: 8px; overflow: hidden; }
+    .m-fill { height: 100%; border-radius: 2px; transition: width 0.6s; }
+
+    /* Quest card */
+    .q-card {
+      background: linear-gradient(135deg, #fff8f5, #fff);
+      border: 1.5px solid #FFD0B5;
+      border-radius: 14px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+    }
+    .q-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 11px; font-weight: 700;
+      background: #FF6B35; color: #fff;
+      padding: 2px 9px; border-radius: 8px; margin-bottom: 8px;
+    }
+    .q-title { font-size: 14px; font-weight: 700; color: #111; margin-bottom: 6px; }
+    .q-desc { font-size: 12px; color: #555; line-height: 1.6; }
+    .q-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+
+    /* Stats */
+    .stat-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 11px 0; border-bottom: 1px solid #f5f5f5;
+      font-size: 14px;
+    }
+    .stat-row:last-child { border-bottom: none; }
+    .stat-label { color: #555; }
+    .stat-value { font-weight: 700; color: #111; }
+
+    /* Stamp card */
+    .stamp-card {
+      background: linear-gradient(180deg, #fff9ed, #fff);
+      border: 1.5px solid #ffd89b;
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+    .stamp-title { font-size: 15px; font-weight: 800; color: #2f2416; margin-bottom: 5px; }
+    .stamp-sub { font-size: 12px; line-height: 1.55; color: #6b5a43; margin-bottom: 12px; }
+    .stamp-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+    }
+    .stamp-day {
+      height: 42px;
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #f4ead8;
+      border: 1px solid #ead4ad;
+      color: #9b7a4b;
+      font-size: 10px;
+      font-weight: 700;
+    }
+    .stamp-day.done {
+      background: linear-gradient(180deg, #ffcf73, #ff9f43);
+      border-color: #e98b2f;
+      color: #4b2a0b;
+      box-shadow: 0 3px 8px rgba(255,159,67,0.22);
+    }
+    .stamp-day.final {
+      background: linear-gradient(180deg, #fff1bd, #ffbd4a);
+      border-color: #d99425;
+    }
+    .stamp-gift {
+      background: #f8f8f8;
+      border-left: 3px solid #FF9800;
+      border-radius: 12px;
+      padding: 12px 14px;
+      color: #555;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    /* Learning map selection */
+    .map-choice-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+    .learning-map-card {
+      background: #f9fbff;
+      border: 1.5px solid #dfe8f5;
+      border-radius: 14px;
+      padding: 12px 13px;
+      color: #27364a;
+      position: relative;
+    }
+    .learning-map-card.active {
+      background: linear-gradient(135deg, #fff8ec, #fff);
+      border-color: #ffbf6b;
+      box-shadow: 0 2px 10px rgba(255,159,67,0.12);
+    }
+    .learning-map-card.island {
+      background:
+        linear-gradient(135deg, rgba(230, 248, 255, 0.94), rgba(255, 255, 255, 0.98)),
+        #fff;
+      border-color: rgba(36, 123, 160, 0.35);
+    }
+    .learning-map-card.island .map-card-name { color: #10506b; }
+    .map-card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 7px;
+    }
+    .map-card-name { font-size: 14px; font-weight: 800; color: #111; }
+    .map-card-fit { font-size: 11px; color: #68758a; line-height: 1.45; margin-top: 3px; }
+    .map-active-badge {
+      flex-shrink: 0;
+      background: #fff3e0;
+      color: #d66b00;
+      border-radius: 9px;
+      padding: 2px 7px;
+      font-size: 10px;
+      font-weight: 800;
+    }
+    .map-progress-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #7a8493;
+      font-size: 11px;
+      margin-bottom: 5px;
+    }
+    .map-progress-track {
+      height: 6px;
+      border-radius: 5px;
+      background: #e9eef5;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+    .map-progress-fill {
+      height: 100%;
+      border-radius: 5px;
+      background: linear-gradient(90deg, #ff9f43, #ffd166);
+    }
+    .map-hotspots {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-bottom: 9px;
+    }
+    .hotspot-chip {
+      background: #fff;
+      border: 1px solid #edf2ff;
+      color: #526173;
+      border-radius: 9px;
+      padding: 3px 7px;
+      font-size: 10px;
+    }
+    .map-card-actions {
+      display: flex;
+      gap: 7px;
+    }
+    .map-action-btn {
+      border: 1px solid #06C755;
+      background: #fff;
+      color: #06C755;
+      border-radius: 10px;
+      padding: 7px 9px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      flex: 1;
+    }
+    .map-action-btn.primary {
+      background: #06C755;
+      color: #fff;
+    }
+    .map-note {
+      background: #f8f8f8;
+      border-left: 3px solid #06C755;
+      border-radius: 12px;
+      padding: 11px 13px;
+      color: #555;
+      font-size: 12px;
+      line-height: 1.6;
+      margin-bottom: 12px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="phone">
+
+  <!-- Status Bar -->
+  <div class="status-bar">
+    <span>9:41</span>
+    <span>▶ ⚡ 100%</span>
+  </div>
+
+  <!-- Header -->
+  <div class="header">
+    <span class="back-btn">‹</span>
+    <div class="avatar">🔥</div>
+    <div class="header-info">
+      <div class="header-name">聖火騎士</div>
+      <div class="header-sub">AI 入門火種 · Week 1 進行中</div>
+    </div>
+    <div class="header-icons">
+      <span>☎</span>
+      <span title="更多">⋯</span>
+    </div>
+  </div>
+
+  <!-- Chat Area -->
+  <div class="chat-area" id="chatArea">
+
+    <div class="date-chip">今日 · Week 1 Day 1</div>
+
+    <!-- Welcome -->
+    <div class="msg-row bot">
+      <div class="bot-avatar">🔥</div>
+      <div class="bubble">⚔️ 歡迎回到知識地下城！<br><br>本週地圖：<strong>AI 入門火種</strong><br>今日練習：<strong>0 / 15 題</strong><br>今天先走一小段。答錯也沒關係，沒亮起來的地方會先收進材料袋。<br><br>點下方選單開始今日練習，或查看其他學習地圖。</div>
+      <div class="msg-time">09:00</div>
+    </div>
+
+  </div>
+
+  <!-- Input -->
+  <div class="input-area">
+    <button class="icon-btn">＋</button>
+    <input class="input-box" id="inputBox" type="text" placeholder="輸入訊息…" onkeydown="if(event.key==='Enter')sendMsg()">
+    <button class="send-btn" onclick="sendMsg()">▶</button>
+  </div>
+
+  <!-- Rich Menu Toggle -->
+  <div class="rm-toggle" onclick="toggleRM()">
+    <span class="rm-toggle-arrow" id="rmArrow">▲</span>
+    <span>功能選單</span>
+  </div>
+
+  <!-- Rich Menu -->
+  <div class="rich-menu" id="richMenu">
+    <div class="rm-grid">
+      <button class="rm-btn" onclick="openSheet('materialsSheet')">
+        <span class="rm-icon">📖</span>
+        <span class="rm-label">材料清單</span>
+      </button>
+      <button class="rm-btn" onclick="openSheet('worldMapSheet')">
+        <span class="rm-icon">🧭</span>
+        <span class="rm-label">地圖選擇</span>
+      </button>
+      <button class="rm-btn" onclick="openSheet('mapSheet')">
+        <span class="rm-icon">🔥</span>
+        <span class="rm-label">集章卡</span>
+      </button>
+      <button class="rm-btn" onclick="startQuiz()">
+        <span class="rm-icon">⚔️</span>
+        <span class="rm-label">今日練習</span>
+      </button>
+      <button class="rm-btn" onclick="openSheet('itemsSheet')">
+        <span class="rm-icon">🎒</span>
+        <span class="rm-label">道具欄</span>
+      </button>
+      <button class="rm-btn" onclick="startOnboarding()">
+        <span class="rm-icon">🪄</span>
+        <span class="rm-label">新手引導</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── OVERLAYS ── -->
+
+  <!-- Learning Maps -->
+  <div class="overlay" id="worldMapSheet" onclick="closeSheet('worldMapSheet')">
+    <div class="sheet" onclick="event.stopPropagation()">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">🧭 地圖選擇
+        <button class="close-btn" onclick="closeSheet('worldMapSheet')">✕</button>
+      </div>
+      <div class="sheet-body">
+        <div class="map-note">
+          先選一盞火走 7 天。本週已點燃的地圖可繼續練習；若想換地圖，可以在道具欄使用「換圖羅盤」。
+        </div>
+        <div class="map-choice-grid">
+          <div class="learning-map-card active">
+            <div class="map-card-top">
+              <div>
+                <div class="map-card-name">🤖 AI 入門火種</div>
+                <div class="map-card-fit">適合：想看懂 ChatGPT、Transformer、Self-Attention 的人。</div>
+              </div>
+              <span class="map-active-badge">本週</span>
+            </div>
+            <div class="map-progress-row"><span>探索進度</span><strong>3 / 7 天</strong></div>
+            <div class="map-progress-track"><div class="map-progress-fill" style="width:43%"></div></div>
+            <div class="map-hotspots">
+              <span class="hotspot-chip">Self-Attention</span>
+              <span class="hotspot-chip">Q / K / V</span>
+              <span class="hotspot-chip">Multi-Head</span>
+            </div>
+            <div class="map-card-actions">
+              <button class="map-action-btn primary" onclick="chooseLearningMap('AI 入門火種', true)">繼續探索</button>
+            </div>
+          </div>
+
+          <div class="learning-map-card">
+            <div class="map-card-top">
+              <div>
+                <div class="map-card-name">📋 PMP 專案火種</div>
+                <div class="map-card-fit">適合：準備證照、想補專案管理架構的上班族。</div>
+              </div>
+            </div>
+            <div class="map-progress-row"><span>探索進度</span><strong>0 / 7 天</strong></div>
+            <div class="map-progress-track"><div class="map-progress-fill" style="width:0%"></div></div>
+            <div class="map-hotspots">
+              <span class="hotspot-chip">People</span>
+              <span class="hotspot-chip">Process</span>
+              <span class="hotspot-chip">Agile</span>
+            </div>
+            <div class="map-card-actions">
+              <button class="map-action-btn" onclick="requestMapSwitch('PMP 專案火種')">本週切換</button>
+            </div>
+          </div>
+
+          <div class="learning-map-card">
+            <div class="map-card-top">
+              <div>
+                <div class="map-card-name">🇯🇵 日文 N3/N2 火種</div>
+                <div class="map-card-fit">適合：想每天養語感、補文法與單字的人。</div>
+              </div>
+            </div>
+            <div class="map-progress-row"><span>探索進度</span><strong>1 / 7 天</strong></div>
+            <div class="map-progress-track"><div class="map-progress-fill" style="width:14%"></div></div>
+            <div class="map-hotspots">
+              <span class="hotspot-chip">助詞</span>
+              <span class="hotspot-chip">敬語</span>
+              <span class="hotspot-chip">閱讀句感</span>
+            </div>
+            <div class="map-card-actions">
+              <button class="map-action-btn" onclick="requestMapSwitch('日文 N3/N2 火種')">本週切換</button>
+            </div>
+          </div>
+
+          <div class="learning-map-card">
+            <div class="map-card-top">
+              <div>
+                <div class="map-card-name">💼 TOEIC 商務英文火種</div>
+                <div class="map-card-fit">適合：想把考試英文與職場英文一起補起來的人。</div>
+              </div>
+            </div>
+            <div class="map-progress-row"><span>探索進度</span><strong>0 / 7 天</strong></div>
+            <div class="map-progress-track"><div class="map-progress-fill" style="width:0%"></div></div>
+            <div class="map-hotspots">
+              <span class="hotspot-chip">Email</span>
+              <span class="hotspot-chip">Part 5</span>
+              <span class="hotspot-chip">聽力情境</span>
+            </div>
+            <div class="map-card-actions">
+              <button class="map-action-btn" onclick="requestMapSwitch('TOEIC 商務英文火種')">本週切換</button>
+            </div>
+          </div>
+
+          <div class="learning-map-card">
+            <div class="map-card-top">
+              <div>
+                <div class="map-card-name">🐍 Python 入門火種</div>
+                <div class="map-card-fit">適合：想從零開始把程式概念練成手感的人。</div>
+              </div>
+            </div>
+            <div class="map-progress-row"><span>探索進度</span><strong>0 / 7 天</strong></div>
+            <div class="map-progress-track"><div class="map-progress-fill" style="width:0%"></div></div>
+            <div class="map-hotspots">
+              <span class="hotspot-chip">變數</span>
+              <span class="hotspot-chip">迴圈</span>
+              <span class="hotspot-chip">函式</span>
+            </div>
+            <div class="map-card-actions">
+              <button class="map-action-btn" onclick="requestMapSwitch('Python 入門火種')">本週切換</button>
+            </div>
+          </div>
+
+          <div class="learning-map-card">
+            <div class="map-card-top">
+              <div>
+                <div class="map-card-name">📊 Excel / 財報火種</div>
+                <div class="map-card-fit">適合：想把上班會用到的表格、數字與財報讀懂的人。</div>
+              </div>
+            </div>
+            <div class="map-progress-row"><span>探索進度</span><strong>0 / 7 天</strong></div>
+            <div class="map-progress-track"><div class="map-progress-fill" style="width:0%"></div></div>
+            <div class="map-hotspots">
+              <span class="hotspot-chip">樞紐分析</span>
+              <span class="hotspot-chip">損益表</span>
+              <span class="hotspot-chip">現金流</span>
+            </div>
+            <div class="map-card-actions">
+              <button class="map-action-btn" onclick="requestMapSwitch('Excel / 財報火種')">本週切換</button>
+            </div>
+          </div>
+
+          <div class="learning-map-card island">
+            <div class="map-card-top">
+              <div>
+                <div class="map-card-name">🏝️ 拓撲學島嶼</div>
+                <div class="map-card-fit">適合：想練抽象思考，理解連續變形、孔洞與空間關係的人。</div>
+              </div>
+              <span class="map-active-badge">獨立島</span>
+            </div>
+            <div class="map-progress-row"><span>探索進度</span><strong>0 / 7 天</strong></div>
+            <div class="map-progress-track"><div class="map-progress-fill" style="width:0%"></div></div>
+            <div class="map-hotspots">
+              <span class="hotspot-chip">連續變形</span>
+              <span class="hotspot-chip">孔洞</span>
+              <span class="hotspot-chip">莫比烏斯帶</span>
+            </div>
+            <div class="map-card-actions">
+              <button class="map-action-btn" onclick="requestMapSwitch('拓撲學島嶼')">本週切換</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Materials -->
+  <div class="overlay" id="materialsSheet" onclick="closeSheet('materialsSheet')">
+    <div class="sheet" onclick="event.stopPropagation()">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">📖 材料清單
+        <button class="close-btn" onclick="closeSheet('materialsSheet')">✕</button>
+      </div>
+      <div class="sheet-body">
+        <div class="material-bag-window">
+          <div class="material-bag-top">
+            <span>材料袋</span>
+            <span class="material-bag-count">4 / 20</span>
+          </div>
+          <div class="material-grid" aria-label="材料格">
+            <button class="material-slot active" data-material="selfAttentionSeed" onclick="selectMaterial('selfAttentionSeed')" title="Self-Attention 火種">
+              <span class="material-rarity"></span>🌫️<span class="material-count">1</span>
+            </button>
+            <button class="material-slot" data-material="multiHeadCore" onclick="selectMaterial('multiHeadCore')" title="Multi-Head 晶核">
+              <span class="material-rarity done"></span>💎<span class="material-count">1</span>
+            </button>
+            <button class="material-slot" data-material="statLanguageDust" onclick="selectMaterial('statLanguageDust')" title="統計語言砂">
+              <span class="material-rarity extend"></span>🟦<span class="material-count">2</span>
+            </button>
+            <button class="material-slot" data-material="dispatcherThread" onclick="selectMaterial('dispatcherThread')" title="中央調度線">
+              <span class="material-rarity extend"></span>🧵<span class="material-count">1</span>
+            </button>
+            <button class="material-slot empty" disabled></button>
+            <button class="material-slot empty" disabled></button>
+            <button class="material-slot empty" disabled></button>
+            <button class="material-slot empty" disabled></button>
+            <button class="material-slot empty" disabled></button>
+            <button class="material-slot empty" disabled></button>
+          </div>
+          <div class="material-detail">
+            <div class="material-detail-name" id="materialDetailName">Self-Attention 火種</div>
+            <div class="material-detail-type" id="materialDetailType">待回看 · 持有 1</div>
+            <div class="material-detail-desc" id="materialDetailDesc">這裡還沒完全亮起來。先收著，晚點用生活例子再看一次：句子裡的「it」到底指誰？</div>
+            <div class="material-detail-use" id="materialDetailUse">用途：可拿去共學營火討論，也會在明天的短題裡輕輕回來。</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Items -->
+  <div class="overlay inventory-overlay" id="itemsSheet" onclick="closeSheet('itemsSheet')">
+    <div class="inventory-window" onclick="event.stopPropagation()">
+      <div class="inventory-titlebar">
+        <span>🎒 道具欄</span>
+        <button class="inventory-close" onclick="closeSheet('itemsSheet')" aria-label="關閉道具欄">✕</button>
+      </div>
+      <div class="inventory-body">
+        <div class="inventory-hp">
+          <div class="hp-label-row"><span>⚡ 剩餘精力</span><span id="itemEnergyText">0 / 15</span></div>
+          <div class="hp-track"><div class="hp-fill" id="itemEnergyFill" style="width:0%"></div></div>
+        </div>
+
+        <div class="inventory-main">
+          <div class="inventory-grid" aria-label="道具格">
+            <button class="item-slot active" data-item="energyPotion" onclick="selectInventoryItem('energyPotion')" title="精力湧現藥水">🧪<span class="item-count">1</span></button>
+            <button class="item-slot" data-item="campfire" onclick="selectInventoryItem('campfire')" title="共學營火">🔥<span class="item-count">1</span></button>
+            <button class="item-slot" data-item="streakFeather" onclick="selectInventoryItem('streakFeather')" title="補簽羽毛">🪶<span class="item-count">1</span></button>
+            <button class="item-slot" data-item="mapCompass" onclick="selectInventoryItem('mapCompass')" title="換圖羅盤">🧭<span class="item-count">1</span></button>
+            <button class="item-slot empty" disabled></button>
+            <button class="item-slot empty" disabled></button>
+            <button class="item-slot empty" disabled></button>
+            <button class="item-slot empty" disabled></button>
+          </div>
+
+          <div class="item-detail">
+            <div class="item-name" id="inventoryItemName">精力湧現藥水</div>
+            <div class="item-type" id="inventoryItemType">專注延續 · 持有 1</div>
+            <div class="item-desc" id="inventoryItemDesc">精力耗盡但手感正熱時使用。立刻補滿精力，無縫繼續練習；不刪選項、不給答案、不降低題目難度。</div>
+            <div class="item-note" id="inventoryItemNote">最佳時機：今日 15 題完成後，仍想進入自由練習場。</div>
+            <button class="inventory-use" id="inventoryUseBtn" onclick="useSelectedItem()">使用道具</button>
+          </div>
+        </div>
+
+        <div class="inventory-passive">
+          <strong>今日提醒</strong>
+          道具只幫你多走一小段，不能刪選項、不能給答案，也不能替你學會。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stamp Card -->
+  <div class="overlay" id="mapSheet" onclick="closeSheet('mapSheet')">
+    <div class="sheet" onclick="event.stopPropagation()">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">🔥 7 日集章卡
+        <button class="close-btn" onclick="closeSheet('mapSheet')">✕</button>
+      </div>
+      <div class="sheet-body">
+        <div class="stamp-card">
+          <div class="stamp-title">今天也回來添了一根柴</div>
+          <div class="stamp-sub">完成每日 15 題就能蓋章。答對答錯都算，因為願意回來練習，本身就值得被記下來。</div>
+          <div class="stamp-grid">
+            <div class="stamp-day done">Day 1<br>🔥</div>
+            <div class="stamp-day done">Day 2<br>🔥</div>
+            <div class="stamp-day done">Day 3<br>🔥</div>
+            <div class="stamp-day">Day 4<br>○</div>
+            <div class="stamp-day">Day 5<br>○</div>
+            <div class="stamp-day">Day 6<br>○</div>
+            <div class="stamp-day final">Day 7<br>🎁</div>
+          </div>
+        </div>
+        <div class="stamp-gift">
+          <strong>第 7 天的火會更亮。</strong><br>
+          再完成 4 天，可開週末營火寶箱：共學營火、精力湧現藥水、守火者稱號碎片。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quest -->
+  <div class="overlay" id="questSheet" onclick="closeSheet('questSheet')">
+    <div class="sheet" onclick="event.stopPropagation()">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">📜 委託板
+        <button class="close-btn" onclick="closeSheet('questSheet')">✕</button>
+      </div>
+      <div class="sheet-body">
+        <div class="q-card">
+          <div class="q-badge">⭐ 進行中</div>
+          <div class="q-title">W1-MVP-001｜為外行人點燃第一根火柴</div>
+          <div class="q-desc">
+            製作一份圖解，讓朋友在 60 秒內看懂 AI 如何找到「it」的指向對象。<br><br>
+            ✗ 不能出現「Self-Attention」等術語<br>
+            ✓ 使用生活化類比加分<br>
+            ✓ 有視覺元素（箭頭、顏色）加分
+          </div>
+          <div class="q-tags">
+            <span class="v-tag tag-o">截止：Day 6</span>
+            <span class="v-tag tag-b">初級煉金師</span>
+          </div>
+        </div>
+        <div style="font-size:12px;color:#bbb;text-align:center;margin-top:8px">完成後截圖傳入對話框即可結算</div>
+
+        <div class="section-label" style="margin-top:16px">獎勵機制</div>
+        <div class="stat-row"><span class="stat-label">🥉 Bronze</span><span class="stat-value">🔥 燃料 +2 · 據點升溫</span></div>
+        <div class="stat-row"><span class="stat-label">🥈 Silver</span><span class="stat-value">🔥 +2 · 🧪 藥水 ×1</span></div>
+        <div class="stat-row"><span class="stat-label">🥇 Gold</span><span class="stat-value">🔥 +3 · 🧪 ×1 · 💎 ×1</span></div>
+        <div class="stat-row" style="border:none">
+          <span class="stat-label" style="color:#bbb;font-size:12px">⏳ 未完成</span>
+          <span class="stat-value" style="color:#bbb;font-size:12px">據點 48h 後降溫</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="overlay" id="statsSheet" onclick="closeSheet('statsSheet')">
+    <div class="sheet" onclick="event.stopPropagation()">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">🔥 本週集章
+        <button class="close-btn" onclick="closeSheet('statsSheet')">✕</button>
+      </div>
+      <div class="sheet-body">
+        <div class="stat-row"><span class="stat-label">📇 今日練習</span><span class="stat-value">15 / 15 題</span></div>
+        <div class="stat-row"><span class="stat-label">🔥 集章進度</span><span class="stat-value">Day 3 / 7</span></div>
+        <div class="stat-row"><span class="stat-label">🌫️ 待回看火種</span><span class="stat-value">1 顆</span></div>
+        <div class="stat-row"><span class="stat-label">💎 新材料</span><span class="stat-value">2 份</span></div>
+        <div class="stat-row"><span class="stat-label">🤝 共學營火</span><span class="stat-value">可使用 ×1</span></div>
+        <div class="stat-row" style="border:none"><span class="stat-label">🎁 第 7 天寶箱</span><span class="stat-value">再 4 天</span></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let energy = 0;
+  let rmOpen = false;
+  let selectedItemId = 'energyPotion';
+  let currentPracticeIndex = 0;
+  let practiceAnswered = 0;
+  let activePracticeQuestions = [];
+
+  const practiceQuestions = [
+    { title: 'Card #1 — Self-Attention', body: 'The trophy did not fit in the suitcase because <strong>it</strong> was too big.<div class="card-divider"></div>AI 要判斷 it 指誰，最接近哪一種做法？', options: ['只看最近的名詞', '同時計算每個字之間的相關分數', '查字典找固定答案'], answer: 1, material: 'Self-Attention 會看整句，不只看最近的字。' },
+    { title: 'Card #2 — Q / K / V', body: '每個字都在問「我要找誰」、亮出「我像什麼」、帶著「我能提供什麼」。<div class="card-divider"></div>這三個角色分別是？', options: ['Query / Key / Value', 'Queue / Keep / Vote', 'Question / Knowledge / Voice'], answer: 0, material: 'Query 是尋找方向，Key 是可被比對的線索，Value 是可取用的內容。' },
+    { title: 'Card #3 — Multi-Head Attention', body: '如果只用一個角度看句子，可能漏掉語氣、指代或關係。<div class="card-divider"></div>Multi-Head 的直覺比較像什麼？', options: ['多人從不同角度一起看同一件事', '把題目拆成比較簡單的題目', '直接選最常出現的字'], answer: 0, material: '多個 head 像多個觀察角度，最後再把觀察合起來。' },
+    { title: 'Card #4 — Token', body: '模型讀文字時，不一定用人類眼中的「一個字」當單位。<div class="card-divider"></div>Token 比較像什麼？', options: ['模型切好的文字小塊', '整篇文章的標題', '使用者帳號的密碼'], answer: 0, material: 'Token 是模型處理文字時使用的小單位。' },
+    { title: 'Card #5 — Context Window', body: '模型一次能放在桌上看的內容有限。<div class="card-divider"></div>Context Window 指的是什麼？', options: ['模型這次能參考的內容範圍', '瀏覽器視窗大小', '答題時間限制'], answer: 0, material: 'Context Window 是當下可被模型一起參考的文字範圍。' },
+    { title: 'Card #6 — Embedding', body: '有些詞意思接近，即使字面不同，也會被放在相近的位置。<div class="card-divider"></div>Embedding 最像什麼？', options: ['把意思放到一張看不見的地圖上', '把文章變成圖片', '把錯字自動改正'], answer: 0, material: 'Embedding 是把語意轉成可比較的位置。' },
+    { title: 'Card #7 — Vector Search', body: '使用者問「如何提升專注」，系統找出意思接近的筆記，不一定只找完全相同的字。<div class="card-divider"></div>這接近哪個概念？', options: ['向量搜尋', '字母排序', '隨機抽籤'], answer: 0, material: '向量搜尋找的是語意接近，不只是字面相同。' },
+    { title: 'Card #8 — RAG', body: '回答前先去資料庫翻資料，再根據找到的內容回答。<div class="card-divider"></div>這比較像？', options: ['RAG', '只靠背誦', '把問題刪短'], answer: 0, material: 'RAG 是先取回資料，再生成回答。' },
+    { title: 'Card #9 — Fine-tuning', body: '希望模型長期學會特定格式或風格，而不是每次都塞一大段提示。<div class="card-divider"></div>較接近哪個方向？', options: ['Fine-tuning', '重新整理網頁', '換一個按鈕顏色'], answer: 0, material: 'Fine-tuning 比較像調整模型習慣，不是單次提示。' },
+    { title: 'Card #10 — Prompt', body: '你對模型說：「請用國中生也懂的方式解釋。」<div class="card-divider"></div>這句話在流程中是什麼？', options: ['Prompt', 'Dataset', 'Server'], answer: 0, material: 'Prompt 是你這次給模型的任務說明與限制。' },
+    { title: 'Card #11 — Temperature', body: '同一題，有時希望答案穩定，有時希望答案更有創意。<div class="card-divider"></div>常用來調整這種發散程度的是？', options: ['Temperature', 'Token ID', '檔案大小'], answer: 0, material: 'Temperature 越高，答案通常越發散；越低，通常越穩定。' },
+    { title: 'Card #12 — Hallucination', body: '模型很有自信地說出一段看似合理、但其實不存在的資料。<div class="card-divider"></div>這通常稱為？', options: ['Hallucination', 'Compression', 'Bookmark'], answer: 0, material: 'Hallucination 是模型生成了看似合理但不可靠的內容。' },
+    { title: 'Card #13 — Evaluation', body: '我們想知道一個 AI 回答是不是穩定、準確、符合格式。<div class="card-divider"></div>這需要做什麼？', options: ['建立評測方式', '只看回答長短', '讓它多回答幾次就好'], answer: 0, material: 'Evaluation 是用一致標準檢查模型表現。' },
+    { title: 'Card #14 — Guardrail', body: '系統需要避免模型回覆不該回覆的內容，也要讓回答保持在任務範圍內。<div class="card-divider"></div>這比較像什麼？', options: ['Guardrail', 'Theme Color', 'Loading Screen'], answer: 0, material: 'Guardrail 是把模型行為限制在可接受範圍內的護欄。' },
+    { title: 'Card #15 — AI Workflow', body: '真正的 AI 產品通常不是只有模型本身，還包含資料、提示、檢索、工具與評測。<div class="card-divider"></div>這比較像什麼？', options: ['一條工作流程', '單一魔法按鈕', '只靠模型名字決定效果'], answer: 0, material: 'AI 產品更像流程設計，模型只是其中一個環節。' }
+  ];
+
+  const expansionQuestions = [
+    { id: 'ai-self-attention-meeting', title: 'Card #16 — Self-Attention 情境題', body: '會議記錄寫著：「主管把報告交給新人，因為他明天要簡報。」<div class="card-divider"></div>模型要判斷「他」指誰，最需要比較什麼？', options: ['句中各角色與「他」的關聯', '哪個詞離「他」最近', '這句話有幾個逗號'], answer: 0, material: '指代判斷要看整句關係，不只看距離。' },
+    { id: 'ai-qkv-library', title: 'Card #17 — Q / K / V 圖書館', body: '你到圖書館找一本書：你心中的問題、書背上的標籤、書裡真正的內容。<div class="card-divider"></div>這三者最像？', options: ['Query / Key / Value', 'Prompt / Token / Model', 'Input / Button / Screen'], answer: 0, material: 'Q/K/V 可以用「找資料」的生活情境理解。' },
+    { id: 'ai-multi-head-detective', title: 'Card #18 — Multi-Head 偵探題', body: '一個偵探看時間線，另一個看動機，另一個看人際關係。<div class="card-divider"></div>這最像哪個概念？', options: ['Multi-Head Attention', 'Temperature', 'Fine-tuning'], answer: 0, material: '多個角度同時觀察，能補足單一角度的盲點。' },
+    { id: 'ai-token-receipt', title: 'Card #19 — Token 收據題', body: '一張長收據被切成一小段一小段，再交給系統處理。<div class="card-divider"></div>這比較像什麼？', options: ['Tokenization', 'Hallucination', 'Guardrail'], answer: 0, material: '長文字會先被切成模型能處理的小單位。' },
+    { id: 'ai-context-desk', title: 'Card #20 — Context Window 桌面題', body: '你的書桌一次只能攤開幾份資料，太多就要收掉一部分。<div class="card-divider"></div>這像模型的哪個限制？', options: ['Context Window', 'Embedding', 'Vector Search'], answer: 0, material: '模型一次能參考的內容有上限。' },
+    { id: 'ai-embedding-map', title: 'Card #21 — Embedding 城市題', body: '「醫生」和「護士」在意思地圖上距離近，「醫生」和「火山」距離遠。<div class="card-divider"></div>這是在描述什麼？', options: ['Embedding', 'Prompt', 'Evaluation'], answer: 0, material: 'Embedding 讓意思可以被距離與方向比較。' },
+    { id: 'ai-vector-recipe', title: 'Card #22 — Vector Search 食譜題', body: '你搜尋「清爽晚餐」，系統找到「檸檬雞胸沙拉」，即使沒有完全相同的字。<div class="card-divider"></div>這比較像？', options: ['語意搜尋', '字母排序', '只比對標題長度'], answer: 0, material: '語意搜尋找的是意思相近。' },
+    { id: 'ai-rag-openbook', title: 'Card #23 — RAG 開書題', body: '考試可以先翻指定講義，再用講義內容作答。<div class="card-divider"></div>這比較像哪種 AI 流程？', options: ['RAG', 'Temperature', 'Tokenization'], answer: 0, material: 'RAG 的重點是先取回可信資料，再生成回答。' },
+    { id: 'ai-finetune-chef', title: 'Card #24 — Fine-tuning 廚房題', body: '師傅不是每次看食譜，而是長期訓練出固定手法。<div class="card-divider"></div>這比較像？', options: ['Fine-tuning', '單次 Prompt', '關掉網頁'], answer: 0, material: 'Fine-tuning 是把某些習慣訓練進模型行為。' },
+    { id: 'ai-prompt-brief', title: 'Card #25 — Prompt 任務單', body: '你給設計師一張任務單：風格、尺寸、禁忌、交付格式都寫清楚。<div class="card-divider"></div>這像給模型什麼？', options: ['Prompt', 'Embedding', 'Dataset License'], answer: 0, material: 'Prompt 是本次任務的說明書。' },
+    { id: 'ai-temperature-radio', title: 'Card #26 — Temperature 音量題', body: '你把創意旋鈕轉高，答案變得比較多變；轉低，答案比較穩。<div class="card-divider"></div>這在調什麼？', options: ['Temperature', 'Context Window', 'RAG'], answer: 0, material: 'Temperature 影響回答的發散程度。' },
+    { id: 'ai-hallucination-tour', title: 'Card #27 — Hallucination 導覽題', body: '導覽員很自信地介紹一座不存在的古蹟，聽起來合理但查不到。<div class="card-divider"></div>這像 AI 的什麼問題？', options: ['Hallucination', 'Token', 'Vector Search'], answer: 0, material: '自信不等於可靠，生成內容仍要驗證。' },
+    { id: 'ai-eval-rubric', title: 'Card #28 — Evaluation 評分表', body: '老師用同一張評分表檢查每份作文，而不是憑感覺。<div class="card-divider"></div>這像 AI 產品裡的什麼？', options: ['Evaluation', 'Fine-tuning', 'Prompt Injection'], answer: 0, material: '評測需要穩定標準，才能比較模型表現。' },
+    { id: 'ai-guardrail-road', title: 'Card #29 — Guardrail 山路題', body: '山路旁的護欄不會替你開車，但會避免你衝出危險範圍。<div class="card-divider"></div>這像什麼？', options: ['Guardrail', 'Embedding', 'Token'], answer: 0, material: 'Guardrail 是限制系統行為邊界。' },
+    { id: 'ai-workflow-kitchen', title: 'Card #30 — AI Workflow 廚房題', body: '餐廳出餐不只靠廚師，還有備料、點單、檢查、送餐。<div class="card-divider"></div>AI 產品比較像什麼？', options: ['一整條工作流程', '只有模型本身', '只看介面顏色'], answer: 0, material: '好的 AI 產品是流程設計，不只是模型名稱。' }
+  ];
+
+  const allPracticeQuestions = [...practiceQuestions, ...expansionQuestions];
+
+  const materialItems = {
+    selfAttentionSeed: {
+      name: 'Self-Attention 火種',
+      type: '待回看 · 持有 1',
+      desc: '這裡還沒完全亮起來。先收著，晚點用生活例子再看一次：句子裡的「it」到底指誰？',
+      use: '用途：可拿去共學營火討論，也會在明天的短題裡輕輕回來。'
+    },
+    multiHeadCore: {
+      name: 'Multi-Head 晶核',
+      type: '已點亮 · 持有 1',
+      desc: '你已經知道：同一段話可以從不同角度一起看。之後遇到長句與上下文題時，會再用到它。',
+      use: '用途：作為進階題的基礎材料，明天會再來敲門。'
+    },
+    statLanguageDust: {
+      name: '統計語言砂',
+      type: '可延伸 · 持有 2',
+      desc: '有些預測不需要真的理解意思，也能猜得不錯。像鍵盤補字、垃圾信件過濾，都可以拿來比較。',
+      use: '用途：適合做比較題，幫你分清楚「猜得像」和「真的理解」。'
+    },
+    dispatcherThread: {
+      name: '中央調度線',
+      type: '可延伸 · 持有 1',
+      desc: '有時候不是每個字自己找答案，而是由一邊去問另一邊。翻譯與圖文對齊會用到這種想法。',
+      use: '用途：適合做跨主題題，之後會接到翻譯、圖文對齊與工具使用。'
+    }
+  };
+
+  const inventoryItems = {
+    energyPotion: {
+      name: '精力湧現藥水',
+      type: '專注延續 · 持有 1',
+      desc: '手感還熱、還想多練一點時使用。精力補回來，但題目不會變簡單，也不會偷偷給答案。',
+      note: '最佳時機：今日 15 題完成後，想再走一小段。',
+      message: '🧪 你喝下精力湧現藥水。<br>⚡ 精力回到 <strong>15 / 15</strong>。題目照樣需要自己想，只是今天可以再走一小段。',
+      apply: () => {
+        energy = 15;
+        updateEnergy();
+      }
+    },
+    campfire: {
+      name: '共學營火',
+      type: '社交共學 · 持有 1',
+      desc: '把一題拿到營火邊聊。大家先各自想，想完才看彼此怎麼說；不交換答案，只交換想法。',
+      note: '最佳時機：遇到很適合用生活例子說明的題目。',
+      message: '🔥 共學營火已點燃。<br>可以邀請 1-3 位隊友。大家先各自作答，結束後只分享思路與類比，不直接餵答案。'
+    },
+    streakFeather: {
+      name: '補簽羽毛',
+      type: '中斷補救 · 持有 1',
+      desc: '昨天的火小了一點，但沒有滅。用羽毛把它輕輕接回來，保留 7 日集章進度。',
+      note: '最佳時機：漏掉一天，但想回到原本的練習節奏。',
+      message: '🪶 你用了補簽羽毛。<br>昨天的火被輕輕接回來了。這不補發練習獎勵，只幫你保留集章節奏。'
+    },
+    mapCompass: {
+      name: '換圖羅盤',
+      type: '本週地圖切換 · 持有 1',
+      desc: '本週想換一盞火時使用。它只更換練習地圖，不補進度、不降低題目難度。',
+      note: '最佳時機：你發現本週更想練另一個科目，且願意從那張地圖重新走 7 天。',
+      message: '🧭 換圖羅盤已準備好。<br>回到「地圖選擇」，挑一張你本週想走的地圖。羅盤只換方向，不替你走路。'
+    }
+  };
+
+  function toggleRM() {
+    rmOpen = !rmOpen;
+    document.getElementById('richMenu').classList.toggle('open', rmOpen);
+    document.getElementById('rmArrow').classList.toggle('open', rmOpen);
+  }
+
+  function openSheet(id) { document.getElementById(id).classList.add('show'); }
+  function closeSheet(id) { document.getElementById(id).classList.remove('show'); }
+
+  function now() {
+    const d = new Date();
+    return `${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}`;
+  }
+
+  function appendBot(html) {
+    const chat = document.getElementById('chatArea');
+    const row = document.createElement('div');
+    row.className = 'msg-row bot';
+    row.innerHTML = `<div class="bot-avatar">🔥</div><div class="bubble">${html}</div><div class="msg-time">${now()}</div>`;
+    chat.appendChild(row);
+    chat.scrollTop = chat.scrollHeight;
+  }
+
+  function appendUser(text) {
+    const chat = document.getElementById('chatArea');
+    const row = document.createElement('div');
+    row.className = 'msg-row user';
+    row.innerHTML = `<div class="msg-time">${now()}</div><div class="bubble">${text}</div>`;
+    chat.appendChild(row);
+    chat.scrollTop = chat.scrollHeight;
+  }
+
+  function appendQR(items) {
+    const chat = document.getElementById('chatArea');
+    const wrap = document.createElement('div');
+    wrap.className = 'qr-wrap';
+    items.forEach(item => {
+      const btn = document.createElement('button');
+      btn.className = 'qr-btn';
+      btn.textContent = item.label;
+      btn.onclick = () => { appendUser(item.label); wrap.remove(); item.fn(); };
+      wrap.appendChild(btn);
+    });
+    chat.appendChild(wrap);
+    chat.scrollTop = chat.scrollHeight;
+  }
+
+  function appendCustom(html) {
+    const chat = document.getElementById('chatArea');
+    const row = document.createElement('div');
+    row.className = 'msg-row bot';
+    row.innerHTML = `<div class="bot-avatar">🔥</div>${html}<div class="msg-time">${now()}</div>`;
+    chat.appendChild(row);
+    chat.scrollTop = chat.scrollHeight;
+  }
+
+  function chooseLearningMap(mapName, current) {
+    closeSheet('worldMapSheet');
+    if (current) {
+      appendBot(`🔥 你正在探索 <strong>${mapName}</strong>。<br>今天先完成 15 題，讓這盞火穩一點。`);
+      return;
+    }
+    appendBot(`你看向 <strong>${mapName}</strong>。<br>如果本週想換到這張地圖，請先到道具欄使用「換圖羅盤」。`);
+  }
+
+  function requestMapSwitch(mapName) {
+    closeSheet('worldMapSheet');
+    appendBot(`🧭 想把本週地圖換成 <strong>${mapName}</strong> 嗎？<br><br>請先使用道具欄裡的「換圖羅盤」。羅盤只會幫你換方向，不會補進度，也不會讓題目變簡單。`);
+    appendQR([
+      { label: '打開道具欄', fn: () => { openSheet('itemsSheet'); selectInventoryItem('mapCompass'); } },
+      { label: '先留在 AI 入門', fn: () => appendBot('好，這週先把 AI 入門火種走穩。') }
+    ]);
+  }
+
+  function selectMaterial(materialId) {
+    const material = materialItems[materialId];
+    if (!material) return;
+
+    document.querySelectorAll('.material-slot[data-material]').forEach(slot => {
+      slot.classList.toggle('active', slot.dataset.material === materialId);
+    });
+    document.getElementById('materialDetailName').textContent = material.name;
+    document.getElementById('materialDetailType').textContent = material.type;
+    document.getElementById('materialDetailDesc').textContent = material.desc;
+    document.getElementById('materialDetailUse').textContent = material.use;
+  }
+
+  function getLearnedQuestionIds() {
+    try {
+      return JSON.parse(localStorage.getItem('ignitionLearnedQuestionIds') || '[]');
+    } catch (error) {
+      return [];
+    }
+  }
+
+  function saveLearnedQuestionId(question) {
+    const questionId = question.id || question.title;
+    const learned = new Set(getLearnedQuestionIds());
+    learned.add(questionId);
+    localStorage.setItem('ignitionLearnedQuestionIds', JSON.stringify([...learned]));
+  }
+
+  function seedFirstPracticeBatch() {
+    const learned = new Set(getLearnedQuestionIds());
+    practiceQuestions.forEach(question => learned.add(question.id || question.title));
+    localStorage.setItem('ignitionLearnedQuestionIds', JSON.stringify([...learned]));
+    appendBot('已把首批 15 題標記為已練。現在再點「今日練習」，會優先從 Card #16 的新情境開始。');
+  }
+
+  function clearPracticeMemory() {
+    localStorage.removeItem('ignitionLearnedQuestionIds');
+    appendBot('已清除本機練習紀錄。現在會回到新玩家狀態，從 Card #1 開始。');
+  }
+
+  function makeReviewQuestion(question, reviewIndex) {
+    return {
+      ...question,
+      isReview: true,
+      title: question.title.replace(/^Card #\d+/, `回看 #${reviewIndex + 1}`),
+      body: `${question.material}<div class="card-divider"></div>換一個角度想：下面哪一句最接近這個概念？`
+    };
+  }
+
+  function buildPracticeSet() {
+    const learned = new Set(getLearnedQuestionIds());
+    const fresh = allPracticeQuestions.filter(q => !learned.has(q.id || q.title));
+    const review = allPracticeQuestions
+      .filter(q => learned.has(q.id || q.title))
+      .map((q, index) => makeReviewQuestion(q, index));
+    return [...fresh, ...review].slice(0, 15);
+  }
+
+  function handleChoice(btn, choice, correct, groupId, feedbackId) {
+    const group = document.getElementById(groupId);
+    group.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
+    btn.classList.add(correct ? 'correct' : 'wrong');
+
+    setTimeout(() => {
+      appendUser(choice);
+      if (correct) {
+        appendBot('✅ 答對了！翻牌中...');
+        setTimeout(() => {
+          if (groupId === 'cg2') showCard2Correct();
+          else showCard1Correct();
+        }, 600);
+      } else {
+        appendBot('這裡還沒亮起來，沒關係。<br><strong>不扣分、不倒退。</strong><br><br>我先幫你把這顆火種收進材料袋，晚點我們再回來看。');
+        setTimeout(() => {
+          if (groupId === 'cg2') showCard2Correct();
+          else showCard1Correct();
+        }, 800);
+      }
+    }, 250);
+  }
+
+  function showCard1Correct() {
+    const chat = document.getElementById('chatArea');
+    const wrap = document.createElement('div');
+    wrap.className = 'msg-row bot';
+    wrap.innerHTML = `
+      <div class="bot-avatar">🔥</div>
+      <div class="card-bubble">
+        <div class="card-header">📇 Card #1 背面 · Self-Attention</div>
+        <div class="card-body">
+          <strong>正確答案：B</strong><br><br>
+          Self-Attention 同時計算「it」與句子裡<em>每一個字</em>的相關分數：<br><br>
+          trophy ↔ it → <strong>0.72 ✅</strong><br>
+          suitcase ↔ it → 0.31<br><br>
+          分數最高的字就是指向對象。全部<strong>平行計算</strong>，不逐字掃描。
+        </div>
+      </div>
+      <div class="msg-time">${now()}</div>`;
+    chat.appendChild(wrap);
+    chat.scrollTop = chat.scrollHeight;
+
+    setTimeout(() => {
+      appendBot('繼續嗎？');
+      appendQR([
+        { label: '1. 繼續 → Card #2', fn: showCard2 },
+        { label: '2. 用自己的話說', fn: showBlindTest1 },
+        { label: '3. 收好今日練習', fn: startCooldown }
+      ]);
+    }, 700);
+  }
+
+  function showCard2() {
+    const chat = document.getElementById('chatArea');
+    const wrap = document.createElement('div');
+    wrap.className = 'msg-row bot';
+    wrap.innerHTML = `
+      <div class="bot-avatar">🔥</div>
+      <div class="card-bubble">
+        <div class="card-header">📇 Card #2 — Q / K / V【階段一】</div>
+        <div class="card-body">
+          You walk into a <strong>networking event</strong>.<br>
+          Every word in a sentence plays <strong>three roles simultaneously</strong>.<br><br>
+          Which maps to Q (Query), K (Key), V (Value)?
+        </div>
+      </div>
+      <div class="msg-time">${now()}</div>`;
+    chat.appendChild(wrap);
+
+    const choices = document.createElement('div');
+    choices.className = 'choices-wrap';
+    choices.id = 'cg2';
+    choices.innerHTML = `
+      <button class="choice-btn" onclick="handleChoice(this,'A',false,'cg2','')">A｜名牌、電梯簡報、名片</button>
+      <button class="choice-btn" onclick="handleChoice(this,'B',true,'cg2','')">B｜你的提問、對方名牌、對方實際知識</button>
+      <button class="choice-btn" onclick="handleChoice(this,'C',false,'cg2','')">C｜主持人廣播、座位表、餐點菜單</button>`;
+    chat.appendChild(choices);
+    chat.scrollTop = chat.scrollHeight;
+  }
+
+  function showCard2Correct() {
+    const chat = document.getElementById('chatArea');
+    const wrap = document.createElement('div');
+    wrap.className = 'msg-row bot';
+    wrap.innerHTML = `
+      <div class="bot-avatar">🔥</div>
+      <div class="card-bubble">
+        <div class="card-header">📇 Card #2 背面 · Q / K / V</div>
+        <div class="card-body">
+          <strong>正確答案：B</strong><br><br>
+          Query 是「我想找什麼」、Key 是「對方掛出的線索」、Value 是「真正能拿來用的內容」。<br><br>
+          這張卡先收到這裡。今天的練習會慢慢收好，等一下再回城開箱。
+        </div>
+      </div>
+      <div class="msg-time">${now()}</div>`;
+    chat.appendChild(wrap);
+    chat.scrollTop = chat.scrollHeight;
+
+    setTimeout(() => {
+      appendBot('今天先收到這裡。先不用急著回想，讓剛剛的材料自己排隊。');
+      appendQR([
+        { label: '回府收拾材料', fn: startCooldown },
+        { label: '我還想做盲測', fn: showBlindTest1 }
+      ]);
+    }, 700);
+  }
+
+  function showBlindTest1() {
+    appendBot('🔍 <strong>階段二：用自己的話說</strong><br><br>不給選項。請用自己的話回答：<br><br>如果 AI 只會從左到右掃過去，它在處理「那個獎盃放不進手提箱，因為它太大了」這句話時，可能會卡在哪裡？<br><br>說完就先收工，不用再硬塞新題。');
+  }
+
+  function startCooldown() {
+    appendCustom(`
+      <div class="cooldown-card">
+        <div class="cooldown-scene">
+          <div class="cooldown-sun"></div>
+          <div class="cooldown-hill"></div>
+          <div class="cooldown-path"></div>
+          <div class="cooldown-hero">
+            <div class="hero-body"></div>
+            <div class="hero-pack"></div>
+          </div>
+        </div>
+        <div class="cooldown-caption">
+          <strong>今日練習完成 · 回府收拾中</strong><br>
+          今天的 15 題已經收好。勇者正在把材料打包回城，這段時間不跳分數、不推新題。
+          <div class="breath-meter"><div class="breath-fill"></div></div>
+          <div class="cooldown-tips">
+            ① 把眼睛從螢幕移開，讓答案自己排隊。<br>
+            ② 慢慢吐一口氣，像把背包放到地上。<br>
+            ③ 不用急著回想，學到的東西會慢慢站穩。
+          </div>
+          <div class="cooldown-next">
+            這是收束期唯一訊息。準備好後，點下方按鈕回城開箱。
+          </div>
+        </div>
+      </div>`);
+    setTimeout(() => {
+      appendQR([
+        { label: '回城開箱', fn: showRewardChest }
+      ]);
+    }, 900);
+  }
+
+  function showRewardChest() {
+    appendCustom(`
+      <div class="reward-card">
+        <div class="reward-chest">🎁</div>
+        <div class="reward-title">城堡寶箱已解鎖</div>
+        <div class="reward-desc">
+          今天願意回來練習，這件事本身就值得被記下來。先開一個主寶箱，再慢慢揭露附加材料。
+        </div>
+      </div>`);
+    setTimeout(() => showSettlement(), 800);
+  }
+
+  function showSettlement() {
+    appendBot('🏺 <strong>今日收穫清單</strong><br><br>🎁 主寶箱：Multi-Head Attention<br>💎 新材料：統計語言模型、Cross-Attention 思維<br>🔥 集章：Day 3 / 7 已蓋章<br><br>接下來只開輕鬆沙盒，不再追加硬題。');
+    setTimeout(() => {
+      appendQR([
+        { label: '進入沙盒區', fn: showSandbox },
+        { label: '今天收工', fn: () => appendBot('已收工。今天的火已經添好了，不必再硬刷。') }
+      ]);
+    }, 700);
+  }
+
+  function showSandbox() {
+    appendCustom(`
+      <div class="sandbox-card">
+        <div class="sandbox-title">🫧 輕鬆沙盒區</div>
+        <div style="font-size:12px;line-height:1.6;color:#526173">
+          規則：不用答對，只要用生活經驗亂比喻。這裡不計分，只看你怎麼想。
+        </div>
+        <div class="sandbox-prompt">
+          破冰 1：如果 Self-Attention 是一場辦公室會議，哪個同事最像「it」正在偷看的人？為什麼？
+        </div>
+        <div class="sandbox-prompt">
+          破冰 2：把 Q / K / V 想成夜市買食物：你、招牌、真正端上桌的餐點，分別對應哪一個角色？
+        </div>
+      </div>`);
+    setTimeout(() => {
+      appendQR([
+        { label: '回答破冰 1', fn: () => appendBot('可以只丟一句類比。例：像會議主持人看每個人表情，判斷剛剛的「他」到底指誰。') },
+        { label: '回答破冰 2', fn: () => appendBot('可以用夜市語言回答。重點是把抽象概念換成生活畫面，不追求精準術語。') }
+      ]);
+    }, 500);
+  }
+
+  function startOnboarding() {
+    appendCustom(`
+      <div class="guide-card">
+        <div class="guide-head">🪄 第一盞火</div>
+        <div class="guide-body">
+          如果你還不知道該從哪裡開始，我可以陪你找第一盞火。<br><br>
+          先不用想太多。你只要告訴我：最近比較想補哪一種能力？
+          <div class="guide-safe">推薦只是指路，最後還是你自己選。</div>
+        </div>
+      </div>`);
+    setTimeout(() => {
+      appendQR([
+        { label: '看懂 AI / 科技', fn: () => showFirstFlameResult('AI 入門火種', 'Python 入門火種') },
+        { label: '工作與證照', fn: () => showFirstFlameResult('PMP 專案火種', 'Excel / 財報火種') },
+        { label: '語言考試', fn: () => showFirstFlameResult('TOEIC 商務英文火種', '日文 N3/N2 火種') },
+        { label: '數學與抽象', fn: () => showFirstFlameResult('拓撲學島嶼', 'AI 入門火種') }
+      ]);
+    }, 600);
+  }
+
+  function showFirstFlameResult(primary, secondary) {
+    appendCustom(`
+      <div class="guide-card">
+        <div class="guide-head">🔥 第一盞火找到了</div>
+        <div class="guide-body">
+          第一推薦：<strong>${primary}</strong><br>
+          第二推薦：<strong>${secondary}</strong><br><br>
+          你可以直接點燃第一盞，也可以打開地圖看看全部地圖。
+          <div class="guide-safe">選錯也沒關係。之後可用換圖羅盤切換本週地圖。</div>
+        </div>
+      </div>`);
+    setTimeout(() => {
+      appendQR([
+        { label: `點燃 ${primary}`, fn: () => appendBot(`已先點燃 <strong>${primary}</strong>。今天完成 15 題，就能蓋上第一個章。`) },
+        { label: '看看全部地圖', fn: () => openSheet('worldMapSheet') },
+        { label: '先做安全試錯', fn: showSafeMistakeCard }
+      ]);
+    }, 600);
+  }
+
+  function showSafeMistakeCard() {
+    appendBot('先提醒你：這一題不是考試，是安全測試。<br><br>請故意選 <strong>A</strong>。我們一起看系統怎麼接住錯誤。');
+    const chat = document.getElementById('chatArea');
+    const wrap = document.createElement('div');
+    wrap.className = 'msg-row bot';
+    wrap.innerHTML = `
+      <div class="bot-avatar">🔥</div>
+      <div class="card-bubble">
+        <div class="card-header">🧪 試錯訓練 — 請故意答錯</div>
+        <div class="card-body">
+          題目：Self-Attention 在句子裡主要做什麼？<br><br>
+          這次的任務不是答對，而是驗證「答錯不懲罰」。
+        </div>
+      </div>
+      <div class="msg-time">${now()}</div>`;
+    chat.appendChild(wrap);
+
+    const choices = document.createElement('div');
+    choices.className = 'choices-wrap';
+    choices.id = 'onboardingWrong';
+    choices.innerHTML = `
+      <button class="choice-btn" onclick="handleOnboardingChoice(this,'A',true)">A｜把最靠近的名詞當答案</button>
+      <button class="choice-btn" onclick="handleOnboardingChoice(this,'B',false)">B｜計算每個字之間的相關性</button>
+      <button class="choice-btn" onclick="handleOnboardingChoice(this,'C',false)">C｜直接查標準答案表</button>`;
+    chat.appendChild(choices);
+    chat.scrollTop = chat.scrollHeight;
+  }
+
+  function handleOnboardingChoice(btn, choice, intendedWrong) {
+    const group = document.getElementById('onboardingWrong');
+    group.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
+    btn.classList.add(intendedWrong ? 'wrong' : 'correct');
+
+    setTimeout(() => {
+      appendUser(choice);
+      if (intendedWrong) {
+        appendCustom(`
+          <div class="guide-card">
+            <div class="guide-head">✅ 錯得很好，沒有任何懲罰</div>
+            <div class="guide-body">
+              你剛剛選了錯的答案，但系統沒有扣分，也沒有把你退回上一關。<br><br>
+              它只做一件事：把這顆還沒亮的火種收好。等你準備好，我們再回來看。
+              <div class="guide-safe">學習不是避開每個錯，而是知道哪裡還沒亮。</div>
+            </div>
+          </div>`);
+      } else {
+        appendBot('你答對了，也很好。只是這段引導想讓你親眼看到：就算答錯也沒事。下一輪正式題裡，你可以放心嘗試。');
+      }
+      setTimeout(() => {
+        appendQR([
+          { label: '認識精力湧現藥水', fn: guideEnergyPotion },
+          { label: '認識共學營火', fn: guideCampfire }
+        ]);
+      }, 700);
+    }, 250);
+  }
+
+  function guideEnergyPotion() {
+    appendCustom(`
+      <div class="guide-card">
+        <div class="guide-head">🧪 道具教學 · 精力湧現藥水</div>
+        <div class="guide-body">
+          <strong>觸發情境：</strong>今日 15 題做完，精力歸零，但你覺得「我現在狀態很好，還想多練一點」。<br><br>
+          <strong>導師：</strong>如果你的腦袋還清醒、手感也熱，我不會急著趕你下線。這瓶藥水只是幫你延長練習時間；題目不會變簡單，答案也不會被透露。
+          <div class="guide-safe">UI 步驟：功能選單 → 道具欄 → 選精力湧現藥水 → 使用道具。</div>
+        </div>
+      </div>`);
+    setTimeout(() => {
+      appendQR([
+        { label: '打開道具欄看藥水', fn: () => {
+          openSheet('itemsSheet');
+          selectInventoryItem('energyPotion');
+          setTimeout(() => {
+            appendBot('看完藥水說明後，可以點右上角 X 關閉道具欄，再繼續下一段引導。');
+            appendQR([{ label: '下一個：共學營火', fn: guideCampfire }]);
+          }, 350);
+        } },
+        { label: '下一個：共學營火', fn: guideCampfire }
+      ]);
+    }, 600);
+  }
+
+  function guideCampfire() {
+    appendCustom(`
+      <div class="guide-card">
+        <div class="guide-head">🔥 道具教學 · 共學營火</div>
+        <div class="guide-body">
+          <strong>觸發情境：</strong>你遇到一題很適合討論的觀念題，或朋友在線，想知道大家是怎麼理解的。<br><br>
+          <strong>導師：</strong>營火不是答案交換所。每個人先自己作答，完成後才分享思路。你可以聽見別人的類比，也保留自己思考的重量。
+          <div class="guide-safe">UI 步驟：功能選單 → 道具欄 → 選共學營火 → 使用道具 → 邀請 1-3 位隊友。</div>
+        </div>
+      </div>`);
+    setTimeout(() => {
+      appendQR([
+        { label: '打開道具欄看營火', fn: () => {
+          openSheet('itemsSheet');
+          selectInventoryItem('campfire');
+          setTimeout(() => {
+            appendBot('看完共學營火後，關閉道具欄就可以完成新手引導。');
+            appendQR([{ label: '完成新手引導', fn: () => appendBot('新手引導完成。接下來你可以放心答題、放心試錯，也可以在手感正熱時用道具延續練習。') }]);
+          }, 350);
+        } },
+        { label: '完成新手引導', fn: () => appendBot('新手引導完成。接下來你可以放心答題、放心試錯，也可以在手感正熱時用道具延續練習。') }
+      ]);
+    }, 600);
+  }
+
+  function renderPracticeQuestion(index) {
+    if (document.activeElement && typeof document.activeElement.blur === 'function') {
+      document.activeElement.blur();
+    }
+
+    const q = activePracticeQuestions[index];
+    if (!q) {
+      appendBot('今天的 15 題已經走完。先回府收拾材料。');
+      startCooldown();
+      return;
+    }
+
+    currentPracticeIndex = index;
+    appendCustom(`
+      <div class="card-bubble">
+        <div class="card-header">📇 ${q.title} · ${index + 1} / ${activePracticeQuestions.length}</div>
+        <div class="card-body">${q.body}</div>
+      </div>`);
+
+    const chat = document.getElementById('chatArea');
+    const choices = document.createElement('div');
+    choices.className = 'choices-wrap';
+    choices.id = `practice-q-${index}`;
+    q.options.forEach((option, optionIndex) => {
+      const btn = document.createElement('button');
+      btn.className = 'choice-btn';
+      btn.textContent = `${String.fromCharCode(65 + optionIndex)}｜${option}`;
+      btn.onclick = () => handlePracticeChoice(btn, index, optionIndex);
+      choices.appendChild(btn);
+    });
+    chat.appendChild(choices);
+    chat.scrollTop = chat.scrollHeight;
+  }
+
+  function handlePracticeChoice(btn, questionIndex, optionIndex) {
+    const q = activePracticeQuestions[questionIndex];
+    if (!q) return;
+    const group = document.getElementById(`practice-q-${questionIndex}`);
+    group.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
+
+    const correct = optionIndex === q.answer;
+    btn.classList.add(correct ? 'correct' : 'wrong');
+    practiceAnswered = Math.max(practiceAnswered, questionIndex + 1);
+    saveLearnedQuestionId(q);
+
+    setTimeout(() => {
+      appendUser(`${String.fromCharCode(65 + optionIndex)}｜${q.options[optionIndex]}`);
+      if (correct) {
+        appendBot(`✅ 這題亮起來了。<br>${q.material}<br><br>進度：<strong>${practiceAnswered} / ${activePracticeQuestions.length}</strong>`);
+      } else {
+        appendBot(`這裡還沒亮起來，沒關係。<br><strong>不扣分、不倒退。</strong><br><br>我先把這顆火種收進材料袋：${q.material}<br><br>進度：<strong>${practiceAnswered} / ${activePracticeQuestions.length}</strong>`);
+      }
+
+      setTimeout(() => {
+        if (questionIndex + 1 >= activePracticeQuestions.length) {
+          appendBot('15 題完成。今天的材料已經收齊，準備回府。');
+          appendQR([{ label: '回府收拾材料', fn: startCooldown }]);
+        } else {
+          appendQR([
+            { label: `下一題 ${questionIndex + 2} / ${activePracticeQuestions.length}`, fn: () => renderPracticeQuestion(questionIndex + 1) },
+            { label: '先看材料清單', fn: () => openSheet('materialsSheet') }
+          ]);
+        }
+      }, 450);
+    }, 250);
+  }
+
+  function startQuiz() {
+    const rememberedCount = getLearnedQuestionIds().length;
+    activePracticeQuestions = buildPracticeSet();
+    currentPracticeIndex = 0;
+    practiceAnswered = 0;
+    const freshCount = activePracticeQuestions.filter(q => !q.isReview).length;
+    const reviewCount = activePracticeQuestions.length - freshCount;
+    appendBot(`⚔️ 今日 ${activePracticeQuestions.length} 題開始。<br>目前這台裝置記得：<strong>${rememberedCount} 題</strong>。<br>本次安排：<strong>新題 ${freshCount} 題</strong>${reviewCount ? `、回看 ${reviewCount} 題` : ''}。<br><br>答過的題目會記起來，下次優先換新的情境。`);
+    setTimeout(() => {
+      renderPracticeQuestion(0);
+    }, 400);
+  }
+
+  function selectInventoryItem(itemId) {
+    const item = inventoryItems[itemId];
+    if (!item) return;
+    selectedItemId = itemId;
+
+    document.querySelectorAll('.item-slot[data-item]').forEach(slot => {
+      slot.classList.toggle('active', slot.dataset.item === itemId);
+    });
+    document.getElementById('inventoryItemName').textContent = item.name;
+    document.getElementById('inventoryItemType').textContent = item.type;
+    document.getElementById('inventoryItemDesc').textContent = item.desc;
+    document.getElementById('inventoryItemNote').textContent = item.note;
+  }
+
+  function useSelectedItem() {
+    const item = inventoryItems[selectedItemId];
+    if (!item) return;
+    if (item.apply) item.apply();
+    closeSheet('itemsSheet');
+    appendBot(item.message);
+  }
+
+  function updateEnergy() {
+    const fill = document.getElementById('itemEnergyFill');
+    const text = document.getElementById('itemEnergyText');
+    if (!fill || !text) return;
+    fill.style.width = `${Math.round((energy / 15) * 100)}%`;
+    text.textContent = `${energy} / 15`;
+  }
+
+  function sendMsg() {
+    const box = document.getElementById('inputBox');
+    const txt = box.value.trim();
+    if (!txt) return;
+    appendUser(txt);
+    box.value = '';
+
+    setTimeout(() => {
+      const t = txt.toLowerCase();
+      if (txt.includes('跳過首批') || txt.includes('模擬已練')) { seedFirstPracticeBatch(); }
+      else if (txt.includes('清除紀錄') || txt.includes('重置紀錄')) { clearPracticeMemory(); }
+      else if (t === '1' || txt.includes('開始') || txt.includes('練習')) { startQuiz(); }
+      else if (t === '2') { showBlindTest1(); }
+      else if (t === '3' || txt.includes('結算') || txt.includes('冷卻') || txt.includes('收工')) { startCooldown(); }
+      else {
+        appendBot(`收到「${txt}」<br><br>繼續嗎？`);
+        appendQR([
+          { label: '1. 今日 15 題', fn: startQuiz },
+          { label: '2. 深挖', fn: showBlindTest1 },
+          { label: '3. 收好今日練習', fn: startCooldown }
+        ]);
+      }
+    }, 500);
+  }
+
+  function handleLaunchParams() {
+    const params = new URLSearchParams(window.location.search);
+    const screen = params.get('screen');
+    const action = params.get('action');
+
+    if (screen === 'map') {
+      setTimeout(() => openSheet('worldMapSheet'), 350);
+    } else if (screen === 'items') {
+      setTimeout(() => openSheet('itemsSheet'), 350);
+    } else if (screen === 'materials') {
+      setTimeout(() => openSheet('materialsSheet'), 350);
+    } else if (screen === 'stamps') {
+      setTimeout(() => openSheet('mapSheet'), 350);
+    }
+
+    if (action === 'practice') {
+      setTimeout(() => startQuiz(), 450);
+    }
+  }
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').catch(() => {
+        // PWA registration requires HTTPS, except on localhost.
+      });
+    });
+  }
+
+  window.addEventListener('load', handleLaunchParams);
+</script>
+</body>
+</html>
