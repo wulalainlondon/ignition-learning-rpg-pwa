@@ -2052,19 +2052,55 @@
   }
 
   function showRewardChest() {
+    const reward = getRewardSummary();
     appendCustom(`
       <div class="reward-card">
         <div class="reward-chest">🎁</div>
-        <div class="reward-title">城堡寶箱已解鎖</div>
+        <div class="reward-title">${reward.chestTitle}</div>
         <div class="reward-desc">
-          今天願意回來練習，這件事本身就值得被記下來。先開一個主寶箱，再慢慢揭露附加材料。
+          ${reward.chestDesc}
         </div>
       </div>`);
     setTimeout(() => showSettlement(), 800);
   }
 
+  function cleanRewardTitle(title) {
+    return title
+      .replace(/^Card #\d+ — /, '')
+      .replace(/^Topo #\d+ — /, '')
+      .replace(/^PMP #\d+ — /, '')
+      .replace(/^JP #\d+ — /, '')
+      .replace(/^TOEIC #\d+ — /, '')
+      .replace(/^Python #\d+ — /, '')
+      .replace(/^Excel #\d+ — /, '')
+      .replace(/^回看 #\d+ — /, '');
+  }
+
+  function getRewardSummary() {
+    const source = activePracticeQuestions.length ? activePracticeQuestions : getCurrentQuestionBank().slice(0, 15);
+    const main = cleanRewardTitle(source[0]?.title || currentLearningMap);
+    const materials = [...new Set(source.map(q => q.material).filter(Boolean))].slice(0, 3);
+    const fallbackByMap = {
+      'AI 入門火種': ['Self-Attention 會看整句，不只看最近的字。', 'Q/K/V 可以用找資料的生活情境理解。'],
+      'PMP 專案火種': ['先知道人在哪裡，才知道溝通要往哪裡走。', '範疇幫團隊守住這次到底要交付什麼。'],
+      '日文 N3/N2 火種': ['は/が 是日文語感核心。', '助詞會決定句子的方向感。'],
+      'TOEIC 商務英文火種': ['TOEIC email 題先抓目的很省力。', 'Part 5 不要急著翻譯，先看結構。'],
+      'Python 入門火種': ['變數像貼標籤的盒子。', 'if 讓程式會分路。'],
+      'Excel / 財報火種': ['儲存格是表格的最小位置。', '營收是損益表的起點。'],
+      '拓撲學島嶼': ['拓撲學重視洞與連接方式，不重視大小、角度或材質。', '連續變形像慢慢捏橡皮泥。']
+    };
+
+    return {
+      chestTitle: `${currentLearningMap} 寶箱已解鎖`,
+      chestDesc: `今天願意走完這張地圖，這件事本身就值得被記下來。先開主寶箱，再收下本次練習留下的材料。`,
+      main,
+      materials: materials.length ? materials : fallbackByMap[currentLearningMap] || [`${currentLearningMap} 的今日材料已收好。`]
+    };
+  }
+
   function showSettlement() {
-    appendBot('🏺 <strong>今日收穫清單</strong><br><br>🎁 主寶箱：Multi-Head Attention<br>💎 新材料：統計語言模型、Cross-Attention 思維<br>🔥 集章：Day 3 / 7 已蓋章<br><br>接下來只開輕鬆沙盒，不再追加硬題。');
+    const reward = getRewardSummary();
+    appendBot(`🏺 <strong>${currentLearningMap} · 今日收穫清單</strong><br><br>🎁 主寶箱：${reward.main}<br>💎 新材料：<br>${reward.materials.map(item => `・${item}`).join('<br>')}<br>🔥 集章：Day 3 / 7 已蓋章<br><br>接下來只開輕鬆沙盒，不再追加硬題。`);
     setTimeout(() => {
       appendQR([
         { label: '進入沙盒區', fn: showSandbox },
