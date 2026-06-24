@@ -997,7 +997,7 @@
     <div class="avatar">🔥</div>
     <div class="header-info">
       <div class="header-name">聖火騎士</div>
-      <div class="header-sub">AI 入門火種 · Week 1 進行中</div>
+      <div class="header-sub" id="currentMapLabel">AI 入門火種 · Week 1 進行中</div>
     </div>
     <div class="header-icons">
       <span>☎</span>
@@ -1076,13 +1076,13 @@
           先選一盞火走 7 天。本週已點燃的地圖可繼續練習；若想換地圖，可以在道具欄使用「換圖羅盤」。
         </div>
         <div class="map-choice-grid">
-          <div class="learning-map-card active">
+          <div class="learning-map-card active" data-map="AI 入門火種">
             <div class="map-card-top">
               <div>
                 <div class="map-card-name">🤖 AI 入門火種</div>
                 <div class="map-card-fit">適合：想看懂 ChatGPT、Transformer、Self-Attention 的人。</div>
               </div>
-              <span class="map-active-badge">本週</span>
+              <span class="map-active-badge" data-default-badge="">本週</span>
             </div>
             <div class="map-progress-row"><span>探索進度</span><strong>3 / 7 天</strong></div>
             <div class="map-progress-track"><div class="map-progress-fill" style="width:43%"></div></div>
@@ -1096,7 +1096,7 @@
             </div>
           </div>
 
-          <div class="learning-map-card">
+          <div class="learning-map-card" data-map="PMP 專案火種">
             <div class="map-card-top">
               <div>
                 <div class="map-card-name">📋 PMP 專案火種</div>
@@ -1115,7 +1115,7 @@
             </div>
           </div>
 
-          <div class="learning-map-card">
+          <div class="learning-map-card" data-map="日文 N3/N2 火種">
             <div class="map-card-top">
               <div>
                 <div class="map-card-name">🇯🇵 日文 N3/N2 火種</div>
@@ -1134,7 +1134,7 @@
             </div>
           </div>
 
-          <div class="learning-map-card">
+          <div class="learning-map-card" data-map="TOEIC 商務英文火種">
             <div class="map-card-top">
               <div>
                 <div class="map-card-name">💼 TOEIC 商務英文火種</div>
@@ -1153,7 +1153,7 @@
             </div>
           </div>
 
-          <div class="learning-map-card">
+          <div class="learning-map-card" data-map="Python 入門火種">
             <div class="map-card-top">
               <div>
                 <div class="map-card-name">🐍 Python 入門火種</div>
@@ -1172,7 +1172,7 @@
             </div>
           </div>
 
-          <div class="learning-map-card">
+          <div class="learning-map-card" data-map="Excel / 財報火種">
             <div class="map-card-top">
               <div>
                 <div class="map-card-name">📊 Excel / 財報火種</div>
@@ -1191,13 +1191,13 @@
             </div>
           </div>
 
-          <div class="learning-map-card island">
+          <div class="learning-map-card island" data-map="拓撲學島嶼">
             <div class="map-card-top">
               <div>
                 <div class="map-card-name">🏝️ 拓撲學島嶼</div>
                 <div class="map-card-fit">適合：想練抽象思考，理解連續變形、孔洞與空間關係的人。</div>
               </div>
-              <span class="map-active-badge">獨立島</span>
+              <span class="map-active-badge" data-default-badge="獨立島">獨立島</span>
             </div>
             <div class="map-progress-row"><span>探索進度</span><strong>0 / 7 天</strong></div>
             <div class="map-progress-track"><div class="map-progress-fill" style="width:0%"></div></div>
@@ -1393,6 +1393,9 @@
   let currentPracticeIndex = 0;
   let practiceAnswered = 0;
   let activePracticeQuestions = [];
+  let currentLearningMap = localStorage.getItem('ignitionCurrentMap') || 'AI 入門火種';
+  let pendingMapSwitch = '';
+  let mapCompassReady = localStorage.getItem('ignitionMapCompassReady') === 'true';
 
   const practiceQuestions = [
     { title: 'Card #1 — Self-Attention', body: 'The trophy did not fit in the suitcase because <strong>it</strong> was too big.<div class="card-divider"></div>AI 要判斷 it 指誰，最接近哪一種做法？', options: ['只看最近的名詞', '同時計算每個字之間的相關分數', '查字典找固定答案'], answer: 1, material: 'Self-Attention 會看整句，不只看最近的字。' },
@@ -1490,7 +1493,11 @@
       type: '本週地圖切換 · 持有 1',
       desc: '本週想換一盞火時使用。它只更換練習地圖，不補進度、不降低題目難度。',
       note: '最佳時機：你發現本週更想練另一個科目，且願意從那張地圖重新走 7 天。',
-      message: '🧭 換圖羅盤已準備好。<br>回到「地圖選擇」，挑一張你本週想走的地圖。羅盤只換方向，不替你走路。'
+      message: '🧭 換圖羅盤已準備好。<br>回到「地圖選擇」，挑一張你本週想走的地圖。羅盤只換方向，不替你走路。',
+      apply: () => {
+        mapCompassReady = true;
+        localStorage.setItem('ignitionMapCompassReady', 'true');
+      }
     }
   };
 
@@ -1550,6 +1557,52 @@
     chat.scrollTop = chat.scrollHeight;
   }
 
+  function updateCurrentMapUI() {
+    const label = document.getElementById('currentMapLabel');
+    if (label) label.textContent = `${currentLearningMap} · Week 1 進行中`;
+
+    document.querySelectorAll('.learning-map-card[data-map]').forEach(card => {
+      const mapName = card.dataset.map;
+      const isCurrent = mapName === currentLearningMap;
+      card.classList.toggle('active', isCurrent);
+
+      let badge = card.querySelector('.map-active-badge');
+      const defaultBadge = badge?.dataset.defaultBadge || '';
+      if (!badge && isCurrent) {
+        badge = document.createElement('span');
+        badge.className = 'map-active-badge';
+        card.querySelector('.map-card-top')?.appendChild(badge);
+      }
+      if (badge) {
+        badge.textContent = isCurrent ? '本週' : defaultBadge;
+        badge.style.display = isCurrent || defaultBadge ? '' : 'none';
+      }
+
+      const actionBtn = card.querySelector('.map-action-btn');
+      if (actionBtn) {
+        actionBtn.classList.toggle('primary', isCurrent);
+        actionBtn.textContent = isCurrent ? '繼續探索' : '本週切換';
+        actionBtn.onclick = () => isCurrent ? chooseLearningMap(mapName, true) : requestMapSwitch(mapName);
+      }
+    });
+  }
+
+  function completeMapSwitch(mapName) {
+    currentLearningMap = mapName;
+    pendingMapSwitch = '';
+    mapCompassReady = false;
+    localStorage.setItem('ignitionCurrentMap', mapName);
+    localStorage.removeItem('ignitionMapCompassReady');
+    updateCurrentMapUI();
+    closeSheet('worldMapSheet');
+    closeSheet('itemsSheet');
+    appendBot(`🧭 羅盤已定位。<br><strong>${mapName}</strong> 已成為本週地圖。<br><br>今天的 15 題會從這張地圖開始，不補進度，也不讓題目變簡單。`);
+    appendQR([
+      { label: '開始今日練習', fn: startQuiz },
+      { label: '查看地圖進度', fn: () => openSheet('worldMapSheet') }
+    ]);
+  }
+
   function chooseLearningMap(mapName, current) {
     closeSheet('worldMapSheet');
     if (current) {
@@ -1560,11 +1613,17 @@
   }
 
   function requestMapSwitch(mapName) {
+    pendingMapSwitch = mapName;
+    if (mapCompassReady) {
+      completeMapSwitch(mapName);
+      return;
+    }
+
     closeSheet('worldMapSheet');
     appendBot(`🧭 想把本週地圖換成 <strong>${mapName}</strong> 嗎？<br><br>請先使用道具欄裡的「換圖羅盤」。羅盤只會幫你換方向，不會補進度，也不會讓題目變簡單。`);
     appendQR([
       { label: '打開道具欄', fn: () => { openSheet('itemsSheet'); selectInventoryItem('mapCompass'); } },
-      { label: '先留在 AI 入門', fn: () => appendBot('好，這週先把 AI 入門火種走穩。') }
+      { label: `先留在 ${currentLearningMap}`, fn: () => appendBot(`好，這週先把 <strong>${currentLearningMap}</strong> 走穩。`) }
     ]);
   }
 
@@ -2061,6 +2120,10 @@
     if (!item) return;
     if (item.apply) item.apply();
     closeSheet('itemsSheet');
+    if (selectedItemId === 'mapCompass' && pendingMapSwitch) {
+      completeMapSwitch(pendingMapSwitch);
+      return;
+    }
     appendBot(item.message);
   }
 
@@ -2098,6 +2161,7 @@
   }
 
   function handleLaunchParams() {
+    updateCurrentMapUI();
     const params = new URLSearchParams(window.location.search);
     const screen = params.get('screen');
     const action = params.get('action');
