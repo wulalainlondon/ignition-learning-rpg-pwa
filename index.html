@@ -1435,6 +1435,29 @@
 
   const allPracticeQuestions = [...practiceQuestions, ...expansionQuestions];
 
+  const topologyQuestions = [
+    { id: 'topology-mug-donut', title: 'Topo #1 — 馬克杯與甜甜圈', body: '拓撲學常問：如果可以拉伸、彎曲，但不撕破、不黏合，兩個形狀算不算同一類。<div class="card-divider"></div>馬克杯和甜甜圈為什麼常被放在一起比？', options: ['它們都可以看成有一個洞', '它們顏色通常一樣', '它們都能裝飲料'], answer: 0, material: '拓撲學重視洞與連接方式，不重視大小、角度或材質。' },
+    { id: 'topology-continuous-deform', title: 'Topo #2 — 連續變形', body: '把橡皮筋慢慢拉成橢圓，但沒有剪斷，也沒有黏起來。<div class="card-divider"></div>這比較像哪個概念？', options: ['連續變形', '隨機抽樣', '重新命名'], answer: 0, material: '連續變形像慢慢捏橡皮泥，過程中不撕破、不黏合。' },
+    { id: 'topology-invariant', title: 'Topo #3 — 不變量', body: '形狀可以被拉長、壓扁，但有些特徵仍然不變。<div class="card-divider"></div>這些不變的特徵常被稱為什麼？', options: ['不變量', '顏色值', '裝飾層'], answer: 0, material: '不變量是變形後仍能幫你辨認同一類形狀的線索。' },
+    { id: 'topology-hole', title: 'Topo #4 — 洞', body: '一個球可以壓扁成餅，但不能變成甜甜圈，除非你打出一個洞。<div class="card-divider"></div>這說明拓撲學很在意什麼？', options: ['洞的數量', '表面顏色', '圖形擺放方向'], answer: 0, material: '洞的數量是常見拓撲特徵。' },
+    { id: 'topology-connected', title: 'Topo #5 — 連通', body: '一座島如果被河切成兩塊，中間沒有橋，走路不能從一塊到另一塊。<div class="card-divider"></div>這比較像在討論什麼？', options: ['連通性', '面積大小', '平均高度'], answer: 0, material: '連通性關心一個空間是不是能在內部走到一起。' },
+    { id: 'topology-boundary', title: 'Topo #6 — 邊界', body: '一張紙的邊緣，是你從紙面往外走時會離開紙的地方。<div class="card-divider"></div>這最接近哪個概念？', options: ['邊界', '中心點', '顏色漸層'], answer: 0, material: '邊界是空間的外緣，常用來分辨不同形狀。' },
+    { id: 'topology-mobius', title: 'Topo #7 — 莫比烏斯帶', body: '一條紙帶扭半圈再黏起來，沿著表面走一圈，會發現內外像接在一起。<div class="card-divider"></div>這是哪個經典例子？', options: ['莫比烏斯帶', '正方體', '普通圓環'], answer: 0, material: '莫比烏斯帶只有一個面，是拓撲學常見的入門例子。' },
+    { id: 'topology-homeomorphism', title: 'Topo #8 — 同胚直覺', body: '如果兩個形狀能靠連續變形互相變成對方，拓撲學會把它們看得很接近。<div class="card-divider"></div>這種關係最接近什麼？', options: ['同胚', '垂直', '等速'], answer: 0, material: '同胚可以先理解成「不剪不黏就能互相變形」。' },
+    { id: 'topology-sphere-plane', title: 'Topo #9 — 球與平面', body: '球面沒有邊界，紙面有邊緣。<div class="card-divider"></div>拓撲學會用這類差異來做什麼？', options: ['分辨空間類型', '計算顏色飽和度', '決定字體大小'], answer: 0, material: '有沒有邊界，是分辨空間的一種方式。' },
+    { id: 'topology-neighborhood', title: 'Topo #10 — 鄰域', body: '你站在地圖上一個點，附近一小圈都算你周圍的地方。<div class="card-divider"></div>這比較像哪個概念？', options: ['鄰域', '洞數', '材質'], answer: 0, material: '鄰域是某個點周圍的一小片範圍。' },
+    { id: 'topology-open-set', title: 'Topo #11 — 開集合直覺', body: '如果你站在一塊區域裡，身邊還能畫出一小圈完全留在區域內。<div class="card-divider"></div>這比較像哪種集合？', options: ['開集合', '封面', '標籤'], answer: 0, material: '開集合可以先用「每個點旁邊都還有活動空間」理解。' },
+    { id: 'topology-closed-set', title: 'Topo #12 — 閉集合直覺', body: '一段路連同兩端的端點都算在內。<div class="card-divider"></div>這比較接近哪種集合？', options: ['閉集合', '隨機集合', '空白集合'], answer: 0, material: '閉集合常用「包含邊界點」來建立直覺。' },
+    { id: 'topology-genus', title: 'Topo #13 — genus 洞數', body: '球沒有洞，甜甜圈有一個洞，雙孔甜甜圈有兩個洞。<div class="card-divider"></div>這是在建立哪種直覺？', options: ['用洞數分類表面', '用重量分類表面', '用顏色分類表面'], answer: 0, material: 'genus 可先粗略理解成表面的洞數。' },
+    { id: 'topology-graph-network', title: 'Topo #14 — 網路連接', body: '地鐵圖不在意站距畫得準不準，而在意哪些站有接到哪些站。<div class="card-divider"></div>這和拓撲學哪個精神相近？', options: ['重視連接關係', '重視真實比例', '重視廣告顏色'], answer: 0, material: '拓撲學常關心連接方式，而不是精準距離。' },
+    { id: 'topology-summary', title: 'Topo #15 — 拓撲學總結', body: '如果幾何像是在量長度與角度，拓撲學更像是在問：形狀怎麼連、洞在哪、能不能慢慢變成另一個。<div class="card-divider"></div>哪句最接近拓撲學精神？', options: ['不撕不黏，看形狀的連接本質', '只看顏色和材質', '只計算價格'], answer: 0, material: '拓撲學是一種看形狀本質關係的方式。' }
+  ];
+
+  const questionBanks = {
+    'AI 入門火種': [...practiceQuestions, ...expansionQuestions],
+    '拓撲學島嶼': topologyQuestions
+  };
+
   const materialItems = {
     selfAttentionSeed: {
       name: 'Self-Attention 火種',
@@ -1642,7 +1665,7 @@
 
   function getLearnedQuestionIds() {
     try {
-      return JSON.parse(localStorage.getItem('ignitionLearnedQuestionIds') || '[]');
+      return JSON.parse(localStorage.getItem(`ignitionLearnedQuestionIds:${currentLearningMap}`) || '[]');
     } catch (error) {
       return [];
     }
@@ -1652,19 +1675,19 @@
     const questionId = question.id || question.title;
     const learned = new Set(getLearnedQuestionIds());
     learned.add(questionId);
-    localStorage.setItem('ignitionLearnedQuestionIds', JSON.stringify([...learned]));
+    localStorage.setItem(`ignitionLearnedQuestionIds:${currentLearningMap}`, JSON.stringify([...learned]));
   }
 
   function seedFirstPracticeBatch() {
     const learned = new Set(getLearnedQuestionIds());
-    practiceQuestions.forEach(question => learned.add(question.id || question.title));
-    localStorage.setItem('ignitionLearnedQuestionIds', JSON.stringify([...learned]));
-    appendBot('已把首批 15 題標記為已練。現在再點「今日練習」，會優先從 Card #16 的新情境開始。');
+    getCurrentQuestionBank().slice(0, 15).forEach(question => learned.add(question.id || question.title));
+    localStorage.setItem(`ignitionLearnedQuestionIds:${currentLearningMap}`, JSON.stringify([...learned]));
+    appendBot(`已把 <strong>${currentLearningMap}</strong> 的首批 15 題標記為已練。現在再點「今日練習」，會優先安排這張地圖的新題或回看題。`);
   }
 
   function clearPracticeMemory() {
-    localStorage.removeItem('ignitionLearnedQuestionIds');
-    appendBot('已清除本機練習紀錄。現在會回到新玩家狀態，從 Card #1 開始。');
+    localStorage.removeItem(`ignitionLearnedQuestionIds:${currentLearningMap}`);
+    appendBot(`已清除 <strong>${currentLearningMap}</strong> 的本機練習紀錄。現在會回到這張地圖的新玩家狀態。`);
   }
 
   function makeReviewQuestion(question, reviewIndex) {
@@ -1678,11 +1701,16 @@
 
   function buildPracticeSet() {
     const learned = new Set(getLearnedQuestionIds());
-    const fresh = allPracticeQuestions.filter(q => !learned.has(q.id || q.title));
-    const review = allPracticeQuestions
+    const questionBank = getCurrentQuestionBank();
+    const fresh = questionBank.filter(q => !learned.has(q.id || q.title));
+    const review = questionBank
       .filter(q => learned.has(q.id || q.title))
       .map((q, index) => makeReviewQuestion(q, index));
     return [...fresh, ...review].slice(0, 15);
+  }
+
+  function getCurrentQuestionBank() {
+    return questionBanks[currentLearningMap] || questionBanks['AI 入門火種'];
   }
 
   function handleChoice(btn, choice, correct, groupId, feedbackId) {
@@ -2095,7 +2123,7 @@
     practiceAnswered = 0;
     const freshCount = activePracticeQuestions.filter(q => !q.isReview).length;
     const reviewCount = activePracticeQuestions.length - freshCount;
-    appendBot(`⚔️ 今日 ${activePracticeQuestions.length} 題開始。<br>目前這台裝置記得：<strong>${rememberedCount} 題</strong>。<br>本次安排：<strong>新題 ${freshCount} 題</strong>${reviewCount ? `、回看 ${reviewCount} 題` : ''}。<br><br>答過的題目會記起來，下次優先換新的情境。`);
+    appendBot(`⚔️ <strong>${currentLearningMap}</strong> 今日 ${activePracticeQuestions.length} 題開始。<br>目前這台裝置在這張地圖記得：<strong>${rememberedCount} 題</strong>。<br>本次安排：<strong>新題 ${freshCount} 題</strong>${reviewCount ? `、回看 ${reviewCount} 題` : ''}。<br><br>答過的題目會記起來，下次優先換新的情境。`);
     setTimeout(() => {
       renderPracticeQuestion(0);
     }, 400);
