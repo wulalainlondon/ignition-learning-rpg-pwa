@@ -1277,7 +1277,7 @@
             <button class="item-slot active" data-item="energyPotion" onclick="selectInventoryItem('energyPotion')" title="精力湧現藥水">🧪<span class="item-count">1</span></button>
             <button class="item-slot" data-item="campfire" onclick="selectInventoryItem('campfire')" title="共學營火">🔥<span class="item-count">1</span></button>
             <button class="item-slot" data-item="streakFeather" onclick="selectInventoryItem('streakFeather')" title="補簽羽毛">🪶<span class="item-count">1</span></button>
-            <button class="item-slot" data-item="mapCompass" onclick="selectInventoryItem('mapCompass')" title="換圖羅盤">🧭<span class="item-count">1</span></button>
+            <button class="item-slot" data-item="mapCompass" onclick="selectInventoryItem('mapCompass')" title="換圖羅盤">🧭<span class="item-count">99</span></button>
             <button class="item-slot empty" disabled></button>
             <button class="item-slot empty" disabled></button>
             <button class="item-slot empty" disabled></button>
@@ -1453,9 +1453,202 @@
     { id: 'topology-summary', title: 'Topo #15 — 拓撲學總結', body: '如果幾何像是在量長度與角度，拓撲學更像是在問：形狀怎麼連、洞在哪、能不能慢慢變成另一個。<div class="card-divider"></div>哪句最接近拓撲學精神？', options: ['不撕不黏，看形狀的連接本質', '只看顏色和材質', '只計算價格'], answer: 0, material: '拓撲學是一種看形狀本質關係的方式。' }
   ];
 
+  function makeMonthlyQuestions(prefix, label, concepts, mapName) {
+    return concepts.map((concept, index) => ({
+      id: `${prefix}-${index + 1}`,
+      title: `${label} #${index + 1} — ${concept.name}`,
+      body: `${concept.scene}<div class="card-divider"></div>${concept.ask || `這題最接近「${concept.name}」的哪個理解？`}`,
+      options: [
+        concept.correct || concept.name,
+        concept.wrongA || '只看表面名稱，不看背後關係',
+        concept.wrongB || '直接跳過練習，靠猜測完成'
+      ],
+      answer: 0,
+      material: concept.material || `${mapName}：${concept.name} 先收進材料袋，之後會用不同情境再看一次。`
+    }));
+  }
+
+  const topologyMonthlyQuestions = makeMonthlyQuestions('topology-month', 'Topo', [
+    { name: '路徑', scene: '從島的一端走到另一端，中間每一步都留在島上。', correct: '一條連續的路徑', wrongA: '只看兩點距離', wrongB: '只看路的顏色', material: '路徑關心能不能在空間內連續走過去。' },
+    { name: '路徑連通', scene: '如果島上任兩個地方都能沿著島內道路走到彼此。', correct: '路徑連通', wrongA: '面積最大', wrongB: '邊界最漂亮', material: '路徑連通比單純看大小更重視能否走到。' },
+    { name: '洞數回看', scene: '球、甜甜圈、雙孔甜甜圈最明顯的差異不是大小，而是洞。', correct: '洞的數量能分類形狀', wrongA: '顏色能分類形狀', wrongB: '重量能分類形狀', material: '洞數是拓撲分類的好入口。' },
+    { name: '表面', scene: '紙張、球面、甜甜圈外皮都可以看成不同表面。', correct: '表面本身的連接方式', wrongA: '表面的廣告字', wrongB: '表面的價格', material: '拓撲學看表面如何連接與變形。' },
+    { name: '壓扁不改類', scene: '把圓形橡皮筋壓成方一點的形狀，但沒有剪斷。', correct: '拓撲類型不變', wrongA: '變成完全無關', wrongB: '答案要看顏色', material: '只要不剪不黏，許多變形仍屬同一類。' },
+    { name: '打結直覺', scene: '一條繩子打結後，不剪斷就很難變回沒打結。', correct: '結也是拓撲關心的形狀關係', wrongA: '只跟繩子材質有關', wrongB: '只跟繩子價格有關', material: '結理論也是拓撲學的方向之一。' },
+    { name: 'Euler 特徵直覺', scene: '有些形狀可以用頂點、邊、面的組合留下指紋。', correct: '用結構指紋辨認形狀', wrongA: '用顏色辨認形狀', wrongB: '用名字長度辨認形狀', material: 'Euler 特徵可先理解成形狀的結構指紋。' },
+    { name: '商空間直覺', scene: '把一張紙的兩邊按照規則黏起來，會得到新的空間。', correct: '把邊界依規則黏合', wrongA: '把題目改成選擇題', wrongB: '把顏色塗深', material: '商空間可先從「按規則黏邊」理解。' },
+    { name: '環面', scene: '甜甜圈表面是拓撲學常見的模型。', correct: '環面', wrongA: '直線', wrongB: '普通紙片', material: '環面就是甜甜圈表面的數學版本。' },
+    { name: '球面', scene: '地球表面像球面；你在表面上走，不會遇到邊界。', correct: '球面沒有邊界', wrongA: '球面一定是平的', wrongB: '球面有四個角', material: '球面是封閉表面的基礎例子。' },
+    { name: '緊緻直覺', scene: '一座封閉的小島，走來走去不會逃到無限遠。', correct: '可以先用有限且收得住理解', wrongA: '一定很重', wrongB: '一定不能走路', material: '緊緻可先用「不會跑到無限遠」建立直覺。' },
+    { name: '稠密直覺', scene: '某種標記點撒得很密，任一小區域都碰得到。', correct: '到處都靠得很近', wrongA: '完全沒有點', wrongB: '只出現在邊界', material: '稠密是「任何附近都找得到」的感覺。' },
+    { name: '連續函數', scene: '地圖上的溫度慢慢變，不會突然跳成另一個世界。', correct: '輸入小變動，輸出也小變動', wrongA: '輸入小變動，輸出必定爆炸', wrongB: '完全不能變動', material: '連續函數可用不突然跳躍理解。' },
+    { name: '拓撲等價', scene: '兩個物體看起來不同，但能不剪不黏慢慢互變。', correct: '拓撲上可視為同類', wrongA: '一定完全無關', wrongB: '只看顏色決定', material: '拓撲等價關心可否連續互變。' },
+    { name: '地鐵圖再看', scene: '地鐵圖不用精準距離，也能幫你知道怎麼轉乘。', correct: '連接關係比比例重要', wrongA: '比例永遠最重要', wrongB: '站名長度最重要', material: '拓撲視角常把連接關係放在第一位。' }
+  ], '拓撲學島嶼');
+
   const questionBanks = {
     'AI 入門火種': [...practiceQuestions, ...expansionQuestions],
-    '拓撲學島嶼': topologyQuestions
+    'PMP 專案火種': makeMonthlyQuestions('pmp-month', 'PMP', [
+      { name: '利害關係人', scene: '專案開始前，先找出誰會影響專案、誰會被專案影響。', correct: '辨識利害關係人', material: '先知道人在哪裡，才知道溝通要往哪裡走。' },
+      { name: '專案章程', scene: '團隊正式出發前，需要一份讓專案被授權的文件。', correct: '專案章程', material: '章程像出發許可，讓專案有正式身份。' },
+      { name: '範疇', scene: '客戶一直追加需求，團隊需要知道哪些算本次要做。', correct: '管理範疇', material: '範疇幫團隊守住這次到底要交付什麼。' },
+      { name: 'WBS', scene: '把一個大專案拆成可以管理的小工作包。', correct: '工作分解結構 WBS', material: 'WBS 是把模糊大山拆成可走小路。' },
+      { name: '時程', scene: '任務誰先誰後、什麼時候完成，需要排出順序。', correct: '時程管理', material: '時程管理讓工作有先後節奏。' },
+      { name: '關鍵路徑', scene: '有一串任務只要延遲，整個專案就會延遲。', correct: '關鍵路徑', material: '關鍵路徑是最不能隨便拖延的那條路。' },
+      { name: '成本基準', scene: '預算不是一句大概，而是要有可追蹤的基準。', correct: '成本基準', material: '成本基準讓後續超支與節省有比較點。' },
+      { name: '品質', scene: '交付物不是做完就好，還要符合約定標準。', correct: '品質管理', material: '品質管理關心做出來的東西能不能用、是否符合標準。' },
+      { name: '資源', scene: '同一個人被三個任務搶用，專案經理要協調。', correct: '資源管理', material: '資源管理處理人、設備、材料如何被安排。' },
+      { name: '溝通', scene: '主管要摘要，工程師要細節，客戶要進度。', correct: '溝通管理', material: '溝通不是多說，而是給對的人正確資訊。' },
+      { name: '風險', scene: '還沒發生，但一發生會影響專案的事。', correct: '風險', material: '風險管理是提前看見可能的坑。' },
+      { name: '風險回應', scene: '面對可能延遲的供應商，先準備備案。', correct: '規劃風險回應', material: '風險回應不是祈禱，而是先準備路線。' },
+      { name: '採購', scene: '部分工作要交給外部廠商，需要合約與驗收。', correct: '採購管理', material: '採購管理處理外部資源如何進入專案。' },
+      { name: '變更控制', scene: '有人提出新需求，不能直接塞進進度表。', correct: '變更控制', material: '變更控制讓新需求有入口，而不是偷渡。' },
+      { name: '敏捷', scene: '需求不穩時，團隊用短週期持續交付與調整。', correct: '敏捷方法', material: '敏捷適合不確定中逐步靠近答案。' },
+      { name: 'Scrum', scene: '團隊用 Sprint、每日站會、回顧來推進。', correct: 'Scrum', material: 'Scrum 是敏捷框架之一。' },
+      { name: 'Product Backlog', scene: '產品想做的事情排成一份可調整的清單。', correct: '產品待辦清單', material: 'Backlog 是產品工作的排序池。' },
+      { name: 'Sprint Review', scene: '一個短週期結束，展示完成的成果並收回饋。', correct: 'Sprint Review', material: 'Review 重點是成果與回饋。' },
+      { name: 'Retrospective', scene: '團隊回頭看這次合作哪裡可改善。', correct: '回顧會議', material: 'Retrospective 重點是改善工作方式。' },
+      { name: '僕人式領導', scene: '領導者不是只下命令，而是移除阻礙。', correct: '僕人式領導', material: '敏捷領導常重視支持團隊前進。' },
+      { name: '商業價值', scene: '不是每個功能都一樣重要，要先做最有價值的。', correct: '商業價值優先', material: '價值排序讓團隊先做值得做的事。' },
+      { name: '效益實現', scene: '專案交付後，還要確認是否真的帶來好處。', correct: '效益實現', material: '效益不是做完，而是成果真的產生作用。' },
+      { name: '治理', scene: '組織如何決策、授權、監督專案。', correct: '專案治理', material: '治理是專案背後的決策規則。' },
+      { name: '衝突管理', scene: '兩個部門都認為自己的優先級更高。', correct: '衝突管理', material: '衝突管理要處理需求、情緒與目標落差。' },
+      { name: '談判', scene: '資源不足時，要和不同角色協調取捨。', correct: '談判', material: '談判是專案經理的日常技能。' },
+      { name: 'Lessons Learned', scene: '專案中學到的經驗要記下來，之後少踩坑。', correct: '經驗教訓登錄', material: '經驗教訓讓組織記得學過什麼。' },
+      { name: '里程碑', scene: '專案路上幾個重要完成點。', correct: '里程碑', material: '里程碑幫團隊看見重要節點。' },
+      { name: '驗收', scene: '客戶確認交付物符合約定。', correct: '驗收', material: '驗收是完成與被接受之間的關口。' },
+      { name: '收尾', scene: '專案完成後，文件、合約、經驗都要整理。', correct: '專案收尾', material: '收尾讓專案有乾淨結束。' },
+      { name: '整合管理', scene: '專案經理把範疇、時程、成本、人與風險拉在一起看。', correct: '整合管理', material: '整合管理是把各條線合成一張圖。' }
+    ], 'PMP 專案火種'),
+    '日文 N3/N2 火種': makeMonthlyQuestions('jp-month', 'JP', [
+      { name: 'は / が', scene: '同一句日文中，主題和焦點不一定一樣。', correct: 'は偏主題，が偏焦點', material: 'は/が 是日文語感核心。' },
+      { name: 'を', scene: '動作直接作用到的對象常接這個助詞。', correct: 'を標示動作對象', material: 'を常接在被動作處理的名詞後。' },
+      { name: 'に', scene: '時間、目的地、對象常會用到這個助詞。', correct: 'に標示時間或方向等定位', material: 'に有定位感。' },
+      { name: 'で', scene: '在某個場所做動作，或用某個工具完成。', correct: 'で標示動作場所或手段', material: 'で有「在哪裡/用什麼做」的感覺。' },
+      { name: 'へ', scene: '表示往某個方向去。', correct: 'へ偏方向', material: 'へ常有朝向感。' },
+      { name: 'から / まで', scene: '從早上九點到下午五點。', correct: 'から是起點，まで是終點', material: 'から/まで 是範圍感。' },
+      { name: 'ので', scene: '用比較客觀柔和的方式說原因。', correct: 'ので表示原因', material: 'ので常比から更柔和正式。' },
+      { name: 'のに', scene: '明明準備了，結果還是失敗。', correct: 'のに表示逆接落差', material: 'のに有「明明卻」的感覺。' },
+      { name: 'ても', scene: '即使下雨，也要去。', correct: 'ても表示即使', material: 'ても是讓步語感。' },
+      { name: 'ながら', scene: '一邊聽音樂，一邊讀書。', correct: 'ながら表示同時進行', material: 'ながら把兩個動作疊在一起。' },
+      { name: 'そうだ', scene: '看天空很暗，感覺快下雨。', correct: 'そうだ可表示樣態', material: '樣態そうだ是「看起來」。' },
+      { name: 'ようだ', scene: '根據情況推測，好像已經結束。', correct: 'ようだ表示比喻或推測', material: 'ようだ有「好像」感。' },
+      { name: 'らしい', scene: '聽說他很會做菜。', correct: 'らしい可表示傳聞或典型', material: 'らしい有聽說/像樣的語感。' },
+      { name: 'ために', scene: '為了考試，每天練習。', correct: 'ために表示目的', material: 'ために是目的導向。' },
+      { name: 'ように', scene: '為了能聽懂日劇而練習聽力。', correct: 'ように常接能力或狀態目標', material: 'ように常有達成狀態的感覺。' },
+      { name: '受身形', scene: '我被老師稱讚。', correct: '被動表現', material: '受身形會改變視角。' },
+      { name: '使役形', scene: '媽媽讓孩子整理房間。', correct: '使役表現', material: '使役形表示讓某人做某事。' },
+      { name: '使役受身', scene: '被迫加班。', correct: '使役受身', material: '使役受身常有被要求做的感覺。' },
+      { name: '敬語', scene: '對客戶說話時，用更禮貌的形式。', correct: '敬語', material: '敬語是社會距離與禮貌的語法。' },
+      { name: '尊敬語', scene: '抬高對方動作。', correct: '尊敬語', material: '尊敬語用來抬高對方。' },
+      { name: '謙讓語', scene: '壓低自己的動作以表示禮貌。', correct: '謙讓語', material: '謙讓語是把自己放低。' },
+      { name: 'ておく', scene: '事前先準備好。', correct: 'ておく表示預先做', material: 'ておく有先做起來放著的感覺。' },
+      { name: 'てしまう', scene: '不小心把資料刪掉了。', correct: 'てしまう可表示完成或遺憾', material: 'てしまう常帶完成/可惜。' },
+      { name: 'ばかり', scene: '剛到日本。', correct: 'たばかり表示剛剛', material: 'ばかり有剛發生或偏重的語感。' },
+      { name: 'ところ', scene: '正要出門、正在吃、剛回來。', correct: 'ところ表示階段', material: 'ところ抓動作時間點。' },
+      { name: 'わけではない', scene: '不是完全不懂。', correct: '部分否定', material: 'わけではない常是柔和否定。' },
+      { name: 'わけがない', scene: '他不可能知道。', correct: '強烈否定可能性', material: 'わけがない是「不可能」。' },
+      { name: 'ことにする', scene: '我決定每天背單字。', correct: '自己決定', material: 'ことにする是主觀決定。' },
+      { name: 'ことになる', scene: '公司決定下週搬家。', correct: '外部決定或結果', material: 'ことになる常不是自己單方面決定。' },
+      { name: '閱讀接續', scene: '長句裡先找接續詞，看前後關係。', correct: '先抓句子關係', material: '閱讀時先看轉折、原因、補充會更穩。' }
+    ], '日文 N3/N2 火種'),
+    'TOEIC 商務英文火種': makeMonthlyQuestions('toeic-month', 'TOEIC', [
+      { name: 'Email Purpose', scene: '商務郵件第一段常告訴你為何寫信。', correct: '先抓寫信目的', material: 'TOEIC email 題先抓目的很省力。' },
+      { name: 'Subject Line', scene: '標題寫著 Meeting Rescheduled。', correct: '會議改期', material: 'Subject line 常直接給主線。' },
+      { name: 'Part 5 詞性', scene: '空格前後決定要名詞、動詞或形容詞。', correct: '先判斷詞性', material: 'Part 5 不要急著翻譯，先看結構。' },
+      { name: 'Preposition', scene: 'interested ___ learning more。', correct: 'in', material: '固定搭配是 TOEIC 高頻點。' },
+      { name: 'Tense', scene: 'Since 2020 常提示現在完成式。', correct: '現在完成式', material: '時間線索能幫你選時態。' },
+      { name: 'Passive Voice', scene: 'The report ___ submitted yesterday。', correct: 'was submitted', material: '報告被提交，常用被動。' },
+      { name: 'Invoice', scene: '信中提到 amount due。', correct: '應付金額', material: 'invoice 題常問金額、期限、付款方式。' },
+      { name: 'Schedule', scene: '行程表中 10:30 的項目被問到。', correct: '定位時間欄位', material: 'Schedule 題先定位時間。' },
+      { name: 'Announcement', scene: '公司公告新政策。', correct: '抓政策改變', material: 'Announcement 常問誰受影響、何時開始。' },
+      { name: 'Request', scene: 'Could you please send the file by Friday?', correct: '請求寄檔', material: 'Could you please 是禮貌請求。' },
+      { name: 'Apology', scene: 'We apologize for the inconvenience。', correct: '道歉', material: 'apologize 常代表有延誤或問題。' },
+      { name: 'Reservation', scene: '餐廳或飯店保留座位。', correct: '預約', material: 'reservation 題常問日期、人數、變更。' },
+      { name: 'Shipping', scene: 'The package will be delivered tomorrow。', correct: '運送交付', material: 'shipping 題注意 delivery date。' },
+      { name: 'Promotion', scene: 'Limited-time discount。', correct: '限時優惠', material: 'promotion 常問期限與條件。' },
+      { name: 'Meeting Minutes', scene: '記錄列出決議與待辦。', correct: '會議紀錄', material: 'minutes 不是分鐘，而是會議紀錄。' },
+      { name: 'Job Posting', scene: '招募文列出 qualifications。', correct: '資格條件', material: 'job posting 常問職責與資格。' },
+      { name: 'Memo', scene: '公司內部簡短通知。', correct: '內部備忘錄', material: 'memo 多半是內部溝通。' },
+      { name: 'Chart', scene: '圖表比較每月銷售額。', correct: '先看欄位和趨勢', material: '圖表題先讀標題與軸。' },
+      { name: 'Double Passage', scene: '一封信搭配一張收據。', correct: '交叉比對兩份資料', material: '雙篇閱讀常考對照。' },
+      { name: 'Synonym', scene: '文中 asked 最接近 requested。', correct: '同義替換', material: 'TOEIC 常用同義字改寫答案。' },
+      { name: 'Listening Main Idea', scene: '對話一開始常點出場景。', correct: '先抓場景', material: '聽力先知道在哪裡、誰在說話。' },
+      { name: 'Speaker Intention', scene: 'Why does the man say this?', correct: '判斷說話意圖', material: '意圖題要聽語氣和上下文。' },
+      { name: 'Graphic Question', scene: '聽力搭配表格或地圖。', correct: '邊聽邊對圖定位', material: '圖表聽力要先掃圖。' },
+      { name: 'Distractor', scene: '選項出現聽到的字，但意思不對。', correct: '小心干擾選項', material: '聽到原字不代表答案。' },
+      { name: 'Deadline', scene: 'Please respond no later than Monday。', correct: '最晚週一回覆', material: 'deadline 是關鍵資訊。' },
+      { name: 'Department', scene: 'Human Resources handles hiring。', correct: '人資部門', material: '部門名稱是商務英文常見定位點。' },
+      { name: 'Complaint', scene: '客戶對服務不滿。', correct: '客訴', material: 'complaint 題常問問題與補償。' },
+      { name: 'Warranty', scene: '產品保固一年。', correct: '保固', material: 'warranty 常和 repair/replace 搭配。' },
+      { name: 'Conference', scene: '議程包含 registration 和 keynote。', correct: '研討會', material: 'conference 題注意活動流程。' },
+      { name: 'Inference', scene: '答案沒有原句，要從線索推。', correct: '推論題', material: '推論題找間接證據。' }
+    ], 'TOEIC 商務英文火種'),
+    'Python 入門火種': makeMonthlyQuestions('python-month', 'Python', [
+      { name: '變數', scene: '把玩家分數存在 score 裡。', correct: '變數用來保存資料', material: '變數像貼標籤的盒子。' },
+      { name: '字串', scene: '玩家名稱 "Alice" 是一段文字。', correct: '字串', material: '字串是文字資料。' },
+      { name: '整數', scene: '答對題數 15。', correct: '整數 int', material: 'int 用來表示整數。' },
+      { name: '浮點數', scene: '命中率 0.87。', correct: '浮點數 float', material: 'float 表示小數。' },
+      { name: '布林值', scene: '是否完成今日練習：true 或 false。', correct: '布林值', material: '布林值只有真假。' },
+      { name: 'list', scene: '把 15 題放在一個有順序的清單。', correct: 'list', material: 'list 是有順序的資料集合。' },
+      { name: 'dict', scene: '用 name、level、stamina 存玩家資料。', correct: 'dict', material: 'dict 用 key 找 value。' },
+      { name: 'if', scene: '如果體力大於 0，就能開始練習。', correct: 'if 條件判斷', material: 'if 讓程式會分路。' },
+      { name: 'for loop', scene: '依序檢查題庫裡每一題。', correct: 'for 迴圈', material: 'for 適合逐一處理集合。' },
+      { name: 'while loop', scene: '只要還沒答完，就繼續出題。', correct: 'while 迴圈', material: 'while 依條件持續執行。' },
+      { name: 'function', scene: '把開始練習包成 start_quiz()。', correct: '函式', material: '函式把一段流程命名重用。' },
+      { name: 'parameter', scene: 'send_message(text) 裡的 text。', correct: '參數', material: '參數是傳進函式的資料。' },
+      { name: 'return', scene: '函式算完後把結果交回來。', correct: 'return', material: 'return 是函式的回傳。' },
+      { name: 'module', scene: 'import random 取得隨機功能。', correct: '模組', material: '模組讓你使用別人整理好的工具。' },
+      { name: 'random', scene: '從題庫抽一題。', correct: 'random.choice', material: 'random 可處理隨機選取。' },
+      { name: 'class', scene: 'Player 有名字、體力、道具。', correct: 'class', material: 'class 是物件的設計圖。' },
+      { name: 'object', scene: 'player1 是 Player 做出來的一位玩家。', correct: 'object', material: 'object 是 class 的實例。' },
+      { name: 'method', scene: 'player.add_stamina(20)。', correct: 'method', material: 'method 是物件能做的動作。' },
+      { name: 'exception', scene: '程式遇到錯誤時需要處理。', correct: '例外處理', material: 'exception handling 讓程式不容易整個倒下。' },
+      { name: 'try except', scene: '讀檔失敗時顯示提示。', correct: 'try / except', material: 'try/except 是處理錯誤的基本方式。' },
+      { name: 'file read', scene: '從文字檔讀取題目。', correct: '讀檔', material: '讀檔讓資料不必寫死在程式裡。' },
+      { name: 'JSON', scene: '用結構化格式保存題庫。', correct: 'JSON', material: 'JSON 常用來交換資料。' },
+      { name: 'API', scene: '向伺服器請求今日題目。', correct: 'API', material: 'API 是系統之間溝通的入口。' },
+      { name: 'list comprehension', scene: '用一行產生新的清單。', correct: 'list comprehension', material: '列表生成式讓清單轉換更簡潔。' },
+      { name: 'slice', scene: 'questions[:15] 取前 15 題。', correct: '切片', material: 'slice 可以取集合的一段。' },
+      { name: 'len', scene: '計算題庫有幾題。', correct: 'len()', material: 'len 回傳長度。' },
+      { name: 'append', scene: '把新材料加入材料袋清單。', correct: 'append()', material: 'append 會把元素加到 list 尾端。' },
+      { name: 'set', scene: '記錄已答過題目，避免重複。', correct: 'set', material: 'set 適合保存不重複資料。' },
+      { name: 'import', scene: '載入需要的工具。', correct: 'import', material: 'import 是使用模組的入口。' },
+      { name: 'debug', scene: '找出為什麼題目沒有換地圖。', correct: 'debug', material: 'debug 是定位問題、修正程式的過程。' }
+    ], 'Python 入門火種'),
+    'Excel / 財報火種': makeMonthlyQuestions('excel-finance-month', 'Excel', [
+      { name: '儲存格', scene: 'A1 裡放著一個數字。', correct: '儲存格', material: '儲存格是表格的最小位置。' },
+      { name: '公式', scene: '=A1+B1 會自動計算。', correct: '公式', material: '公式讓表格會自己算。' },
+      { name: 'SUM', scene: '把一整欄銷售額加總。', correct: 'SUM', material: 'SUM 是加總函數。' },
+      { name: 'AVERAGE', scene: '計算平均客單價。', correct: 'AVERAGE', material: 'AVERAGE 算平均。' },
+      { name: 'IF', scene: '分數大於 60 顯示通過。', correct: 'IF', material: 'IF 讓表格做條件判斷。' },
+      { name: 'XLOOKUP', scene: '用商品編號找商品名稱。', correct: 'XLOOKUP', material: 'XLOOKUP 用鍵找資料。' },
+      { name: 'VLOOKUP', scene: '在左側鍵值表查資料。', correct: 'VLOOKUP', material: 'VLOOKUP 是經典查找函數。' },
+      { name: 'Pivot Table', scene: '依月份和品類彙總銷售。', correct: '樞紐分析表', material: 'Pivot Table 用來快速彙總。' },
+      { name: 'Filter', scene: '只看台北門市資料。', correct: '篩選', material: 'Filter 幫你縮小資料範圍。' },
+      { name: 'Sort', scene: '把營收由高到低排列。', correct: '排序', material: 'Sort 讓資料按規則排列。' },
+      { name: 'Conditional Formatting', scene: '讓負數自動顯示紅色。', correct: '條件式格式', material: '條件式格式讓異常更容易看見。' },
+      { name: 'Chart', scene: '把月營收畫成折線圖。', correct: '圖表', material: '圖表讓趨勢比表格更直覺。' },
+      { name: 'Data Validation', scene: '欄位只能選固定選項。', correct: '資料驗證', material: '資料驗證能減少輸入錯誤。' },
+      { name: 'Freeze Panes', scene: '往下捲時標題列仍留著。', correct: '凍結窗格', material: '凍結窗格讓大表格可讀。' },
+      { name: 'Revenue', scene: '公司賣商品或服務取得的收入。', correct: '營收', material: '營收是損益表的起點。' },
+      { name: 'COGS', scene: '賣出商品直接相關的成本。', correct: '銷貨成本', material: 'COGS 影響毛利。' },
+      { name: 'Gross Profit', scene: '營收扣掉銷貨成本。', correct: '毛利', material: '毛利看產品本身賺不賺。' },
+      { name: 'Operating Expense', scene: '薪資、租金、行銷費。', correct: '營業費用', material: '營業費用是營運過程支出。' },
+      { name: 'Operating Income', scene: '毛利再扣營業費用。', correct: '營業利益', material: '營業利益看本業獲利。' },
+      { name: 'Net Income', scene: '所有收入費用稅後最後剩下。', correct: '淨利', material: '淨利是損益表底線。' },
+      { name: 'Assets', scene: '公司擁有且有價值的資源。', correct: '資產', material: '資產是公司手上的資源。' },
+      { name: 'Liabilities', scene: '公司未來需要償還的義務。', correct: '負債', material: '負債是公司欠的。' },
+      { name: 'Equity', scene: '資產扣負債後屬於股東的部分。', correct: '股東權益', material: '權益是資產負債表的剩餘請求權。' },
+      { name: 'Cash Flow', scene: '公司現金實際流入與流出。', correct: '現金流', material: '現金流看錢是否真的進出。' },
+      { name: 'Operating Cash Flow', scene: '本業營運帶來的現金。', correct: '營業現金流', material: '營業現金流看本業造血能力。' },
+      { name: 'Free Cash Flow', scene: '營運現金流扣掉資本支出。', correct: '自由現金流', material: '自由現金流常被用來看公司餘裕。' },
+      { name: 'Margin', scene: '毛利除以營收得到比例。', correct: '利潤率', material: 'margin 讓不同規模公司可比較。' },
+      { name: 'YoY', scene: '今年同季和去年同季比較。', correct: '年增率', material: 'YoY 能避開季節性干擾。' },
+      { name: 'QoQ', scene: '本季和上一季比較。', correct: '季增率', material: 'QoQ 看短期變化。' },
+      { name: 'Dashboard', scene: '把關鍵指標集中成一頁。', correct: '儀表板', material: 'Dashboard 讓決策者快速掃描。' }
+    ], 'Excel / 財報火種'),
+    '拓撲學島嶼': [...topologyQuestions, ...topologyMonthlyQuestions]
   };
 
   const materialItems = {
@@ -1513,9 +1706,9 @@
     },
     mapCompass: {
       name: '換圖羅盤',
-      type: '本週地圖切換 · 持有 1',
+      type: '本週地圖切換 · 持有 99',
       desc: '本週想換一盞火時使用。它只更換練習地圖，不補進度、不降低題目難度。',
-      note: '最佳時機：你發現本週更想練另一個科目，且願意從那張地圖重新走 7 天。',
+      note: '測試版先給 99 個，方便來回切換各島嶼檢查題庫。',
       message: '🧭 換圖羅盤已準備好。<br>回到「地圖選擇」，挑一張你本週想走的地圖。羅盤只換方向，不替你走路。',
       apply: () => {
         mapCompassReady = true;
