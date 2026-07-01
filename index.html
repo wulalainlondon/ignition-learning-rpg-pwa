@@ -1008,12 +1008,12 @@
   <!-- Chat Area -->
   <div class="chat-area" id="chatArea">
 
-    <div class="date-chip">今日 · Week 1 Day 1</div>
+    <div class="date-chip" id="dateChip">今日 · Week 1 Day 1</div>
 
     <!-- Welcome -->
     <div class="msg-row bot">
       <div class="bot-avatar">🔥</div>
-      <div class="bubble">⚔️ 歡迎回到知識地下城！<br><br>本週地圖：<strong>AI 入門火種</strong><br>今日練習：<strong>0 / 15 題</strong><br>今天先走一小段。答錯也沒關係，沒亮起來的地方會先收進材料袋。<br><br>點下方選單開始今日練習，或查看其他學習地圖。</div>
+      <div class="bubble" id="welcomeBubble">⚔️ 歡迎回到知識地下城！<br><br>本週地圖：<strong>AI 入門火種</strong><br>今日練習：<strong>0 / 15 題</strong><br>今天先走一小段。答錯也沒關係，沒亮起來的地方會先收進材料袋。<br><br>點下方選單開始今日練習，或查看其他學習地圖。</div>
       <div class="msg-time">09:00</div>
     </div>
 
@@ -1310,9 +1310,9 @@
       </div>
       <div class="sheet-body">
         <div class="stamp-card">
-          <div class="stamp-title">今天也回來添了一根柴</div>
-          <div class="stamp-sub">完成每日 15 題就能蓋章。答對答錯都算，因為願意回來練習，本身就值得被記下來。</div>
-          <div class="stamp-grid">
+          <div class="stamp-title" id="stampTitle">今天也回來添了一根柴</div>
+          <div class="stamp-sub" id="stampSub">完成每日 15 題就能蓋章。答對答錯都算，因為願意回來練習，本身就值得被記下來。</div>
+          <div class="stamp-grid" id="stampGrid">
             <div class="stamp-day done">Day 1<br>🔥</div>
             <div class="stamp-day done">Day 2<br>🔥</div>
             <div class="stamp-day done">Day 3<br>🔥</div>
@@ -1322,7 +1322,7 @@
             <div class="stamp-day final">Day 7<br>🎁</div>
           </div>
         </div>
-        <div class="stamp-gift">
+        <div class="stamp-gift" id="stampGift">
           <strong>第 7 天的火會更亮。</strong><br>
           再完成 4 天，可開週末營火寶箱：共學營火、精力湧現藥水、守火者稱號碎片。
         </div>
@@ -1774,8 +1774,9 @@
   }
 
   function updateCurrentMapUI() {
+    const progress = getProgressState();
     const label = document.getElementById('currentMapLabel');
-    if (label) label.textContent = `${currentLearningMap} · Week 1 進行中`;
+    if (label) label.textContent = `${currentLearningMap} · Week ${progress.week} 進行中`;
 
     document.querySelectorAll('.learning-map-card[data-map]').forEach(card => {
       const mapName = card.dataset.map;
@@ -1801,6 +1802,45 @@
         actionBtn.onclick = () => isCurrent ? chooseLearningMap(mapName, true) : requestMapSwitch(mapName);
       }
     });
+    updateProgressUI();
+  }
+
+  function updateProgressUI() {
+    const progress = getProgressState();
+    const completed = new Set(getCompletedDateKeys());
+    const todayDone = completed.has(progress.todayKey);
+    const dateChip = document.getElementById('dateChip');
+    if (dateChip) dateChip.textContent = `今日 · Week ${progress.week} Day ${progress.dayOfWeek}`;
+
+    const welcome = document.getElementById('welcomeBubble');
+    if (welcome) {
+      welcome.innerHTML = `⚔️ 歡迎回到知識地下城！<br><br>本週地圖：<strong>${currentLearningMap}</strong><br>今日練習：<strong>${todayDone ? '15' : '0'} / 15 題</strong><br>Week ${progress.week} Day ${progress.dayOfWeek}。今天先走一小段，題組會跟著日期換。答錯也沒關係，沒亮起來的地方會先收進材料袋。<br><br>點下方選單開始今日練習，或查看其他學習地圖。`;
+    }
+
+    const stampTitle = document.getElementById('stampTitle');
+    if (stampTitle) stampTitle.textContent = `${currentLearningMap} · Week ${progress.week} 集章`;
+    const stampSub = document.getElementById('stampSub');
+    if (stampSub) stampSub.textContent = `完成每日 15 題就能蓋章。今天是 Day ${progress.dayOfWeek}，題組會依日期輪替。`;
+    const stampGrid = document.getElementById('stampGrid');
+    if (stampGrid) {
+      const weekStart = parseDateKey(progress.todayKey);
+      weekStart.setDate(weekStart.getDate() - (progress.dayOfWeek - 1));
+      stampGrid.innerHTML = Array.from({ length: 7 }, (_, index) => {
+        const day = new Date(weekStart);
+        day.setDate(weekStart.getDate() + index);
+        const key = toDateKey(day);
+        const done = completed.has(key);
+        const isToday = key === progress.todayKey;
+        const final = index === 6;
+        const mark = done ? '🔥' : final ? '🎁' : isToday ? '○' : '○';
+        return `<div class="stamp-day ${done ? 'done' : ''} ${final ? 'final' : ''}">Day ${index + 1}<br>${mark}</div>`;
+      }).join('');
+    }
+    const stampGift = document.getElementById('stampGift');
+    if (stampGift) {
+      const remaining = Math.max(0, 7 - progress.dayOfWeek);
+      stampGift.innerHTML = `<strong>第 7 天的火會更亮。</strong><br>${remaining ? `再完成 ${remaining} 天` : '今天完成後'}，可開週末營火寶箱：共學營火、精力湧現藥水、守火者稱號碎片。`;
+    }
   }
 
   function completeMapSwitch(mapName) {
@@ -1871,6 +1911,62 @@
     localStorage.setItem(`ignitionLearnedQuestionIds:${currentLearningMap}`, JSON.stringify([...learned]));
   }
 
+  function toDateKey(date = new Date()) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  function parseDateKey(key) {
+    const [year, month, day] = key.split('-').map(Number);
+    return new Date(year, month - 1, day);
+  }
+
+  function getStartDateKey() {
+    let start = localStorage.getItem('ignitionStartDate');
+    if (!start) {
+      start = toDateKey();
+      localStorage.setItem('ignitionStartDate', start);
+    }
+    return start;
+  }
+
+  function getProgressState() {
+    const start = parseDateKey(getStartDateKey());
+    const today = parseDateKey(toDateKey());
+    const elapsed = Math.max(0, Math.floor((today - start) / 86400000));
+    const dayIndex = elapsed + 1;
+    return {
+      todayKey: toDateKey(),
+      dayIndex,
+      week: Math.floor(elapsed / 7) + 1,
+      dayOfWeek: (elapsed % 7) + 1
+    };
+  }
+
+  function getCompletedDateKeys() {
+    try {
+      return JSON.parse(localStorage.getItem(`ignitionCompletedDates:${currentLearningMap}`) || '[]');
+    } catch (error) {
+      return [];
+    }
+  }
+
+  function markTodayCompleted() {
+    const completed = new Set(getCompletedDateKeys());
+    completed.add(getProgressState().todayKey);
+    localStorage.setItem(`ignitionCompletedDates:${currentLearningMap}`, JSON.stringify([...completed]));
+    updateProgressUI();
+  }
+
+  function getDailyQuestionSet() {
+    const bank = getCurrentQuestionBank();
+    const progress = getProgressState();
+    const start = (progress.dayIndex - 1) % bank.length;
+    return Array.from({ length: Math.min(15, bank.length) }, (_, index) => bank[(start + index) % bank.length]);
+  }
+
   function seedFirstPracticeBatch() {
     const learned = new Set(getLearnedQuestionIds());
     getCurrentQuestionBank().slice(0, 15).forEach(question => learned.add(question.id || question.title));
@@ -1881,6 +1977,21 @@
   function clearPracticeMemory() {
     localStorage.removeItem(`ignitionLearnedQuestionIds:${currentLearningMap}`);
     appendBot(`已清除 <strong>${currentLearningMap}</strong> 的本機練習紀錄。現在會回到這張地圖的新玩家狀態。`);
+  }
+
+  function shiftTestDay(days) {
+    const start = parseDateKey(getStartDateKey());
+    start.setDate(start.getDate() - days);
+    localStorage.setItem('ignitionStartDate', toDateKey(start));
+    updateProgressUI();
+    const progress = getProgressState();
+    appendBot(`測試日期已前進。現在是 <strong>Week ${progress.week} Day ${progress.dayOfWeek}</strong>，今日題組會跟著更新。`);
+  }
+
+  function resetTestDay() {
+    localStorage.setItem('ignitionStartDate', toDateKey());
+    updateProgressUI();
+    appendBot('已把測試進度重設為今天開始。現在是 Week 1 Day 1。');
   }
 
   function makeReviewQuestion(question, reviewIndex) {
@@ -1894,12 +2005,10 @@
 
   function buildPracticeSet() {
     const learned = new Set(getLearnedQuestionIds());
-    const questionBank = getCurrentQuestionBank();
-    const fresh = questionBank.filter(q => !learned.has(q.id || q.title));
-    const review = questionBank
-      .filter(q => learned.has(q.id || q.title))
-      .map((q, index) => makeReviewQuestion(q, index));
-    return [...fresh, ...review].slice(0, 15);
+    return getDailyQuestionSet().map((question, index) => {
+      const questionId = question.id || question.title;
+      return learned.has(questionId) ? makeReviewQuestion(question, index) : question;
+    });
   }
 
   function getCurrentQuestionBank() {
@@ -2100,7 +2209,8 @@
 
   function showSettlement() {
     const reward = getRewardSummary();
-    appendBot(`🏺 <strong>${currentLearningMap} · 今日收穫清單</strong><br><br>🎁 主寶箱：${reward.main}<br>💎 新材料：<br>${reward.materials.map(item => `・${item}`).join('<br>')}<br>🔥 集章：Day 3 / 7 已蓋章<br><br>接下來只開輕鬆沙盒，不再追加硬題。`);
+    const progress = getProgressState();
+    appendBot(`🏺 <strong>${currentLearningMap} · 今日收穫清單</strong><br><br>🎁 主寶箱：${reward.main}<br>💎 新材料：<br>${reward.materials.map(item => `・${item}`).join('<br>')}<br>🔥 集章：Week ${progress.week} Day ${progress.dayOfWeek} 已蓋章<br><br>接下來只開輕鬆沙盒，不再追加硬題。`);
     setTimeout(() => {
       appendQR([
         { label: '進入沙盒區', fn: showSandbox },
@@ -2333,6 +2443,7 @@
 
       setTimeout(() => {
         if (questionIndex + 1 >= activePracticeQuestions.length) {
+          markTodayCompleted();
           appendBot('15 題完成。今天的材料已經收齊，準備回府。');
           appendQR([{ label: '回府收拾材料', fn: startCooldown }]);
         } else {
@@ -2403,6 +2514,8 @@
       const t = txt.toLowerCase();
       if (txt.includes('跳過首批') || txt.includes('模擬已練')) { seedFirstPracticeBatch(); }
       else if (txt.includes('清除紀錄') || txt.includes('重置紀錄')) { clearPracticeMemory(); }
+      else if (txt.includes('前進一天')) { shiftTestDay(1); }
+      else if (txt.includes('回到今天')) { resetTestDay(); }
       else if (t === '1' || txt.includes('開始') || txt.includes('練習')) { startQuiz(); }
       else if (t === '2') { showBlindTest1(); }
       else if (t === '3' || txt.includes('結算') || txt.includes('冷卻') || txt.includes('收工')) { startCooldown(); }
